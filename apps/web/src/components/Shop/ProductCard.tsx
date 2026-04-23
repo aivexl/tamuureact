@@ -76,9 +76,9 @@ export const ProductCard = React.memo(({ product, navigate, isSmall = false, onA
                         </div>
 
                         <p className={`${isSmall ? 'text-[9px] md:text-xs' : 'text-[11px] md:text-sm'} font-black text-[#0A1128] truncate`}>
-                            {product.harga_estimasi && !isNaN(Number(product.harga_estimasi)) 
+                            {product.harga_estimasi && !isNaN(Number(product.harga_estimasi)) && Number(product.harga_estimasi) !== 0
                                 ? formatCurrency(product.harga_estimasi) 
-                                : (product.harga_estimasi || 'Tanya Harga')}
+                                : 'Hubungi Vendor'}
                         </p>
                         
                         <p className={`${isSmall ? 'text-[6px] md:text-[7px]' : 'text-[7px] md:text-[8px]'} font-black text-[#FFBF00] uppercase tracking-widest mt-0.5 truncate`}>
