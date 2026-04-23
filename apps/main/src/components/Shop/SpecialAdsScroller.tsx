@@ -144,15 +144,15 @@ export const SpecialAdsScroller = ({
 
                     <button 
                         onClick={() => handleScroll(-300)}
-                        className="absolute left-0 top-1/2 -translate-y-1/2 md:-translate-x-12 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all shadow-2xl z-20 hidden md:flex"
+                        className="absolute left-0 top-1/2 -translate-y-1/2 md:-translate-x-11 w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all shadow-2xl z-20 hidden md:flex"
                     >
-                        <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+                        <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
                     </button>
                     <button 
                         onClick={() => handleScroll(300)}
-                        className="absolute right-0 top-1/2 -translate-y-1/2 md:translate-x-12 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all shadow-2xl z-20 hidden md:flex"
+                        className="absolute right-0 top-1/2 -translate-y-1/2 md:translate-x-11 w-9 h-9 md:w-10 md:h-10 rounded-full bg-white/10 backdrop-blur-md border border-white/10 flex items-center justify-center text-white hover:bg-[#FFBF00] hover:text-[#0A1128] transition-all shadow-2xl z-20 hidden md:flex"
                     >
-                        <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+                        <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
                     </button>
                 </div>
             </div>
