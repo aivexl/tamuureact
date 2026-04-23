@@ -47,6 +47,12 @@ export async function middleware(request: NextRequest) {
   const isVitePublicRoute = isVitePublicPath(pathname);
 
   // ============================================
+  // 4.5 BOT DETECTION (For SEO Injection)
+  // ============================================
+  const userAgent = request.headers.get('user-agent') || '';
+  const isBot = /bot|crawler|spider|facebookexternalhit|whatsapp|google|bing|yandex|slack|twitterbot/i.test(userAgent);
+
+  // ============================================
   // 5. ASSET PROXY (Priority #1 - Before Redirects!)
   // Assets must be proxied BEFORE domain enforcement
   // ============================================
@@ -117,6 +123,30 @@ export async function middleware(request: NextRequest) {
 
   // B. Public Vite content on any domain -> PROXY to Vite
   if (isVitePublicRoute) {
+      // SEO BOT REDIRECTION: If it's a crawler and hitting a shop/product detail, 
+      // rewrite to our Next.js SEO shell instead of proxying to Vite.
+      if (isBot) {
+          const productMatch = pathname.match(/\/shop\/[^\/]+\/([^\/]+)/);
+          const shortProductMatch = pathname.match(/\/product\/([^\/]+)/);
+          
+          if (productMatch || shortProductMatch) {
+              const productId = productMatch ? productMatch[1] : shortProductMatch?.[1];
+              const slug = productMatch ? pathname.split('/')[2] : 'umum';
+              
+              const seoUrl = new URL(`/shop/${slug}/${productId}/seo-bot`, request.url);
+              console.log(`[Middleware 🤖] SEO Bot Detected. Rewriting to SEO Shell: ${seoUrl.pathname}`);
+              return NextResponse.rewrite(seoUrl);
+          }
+
+          const storefrontMatch = pathname.match(/\/shop\/([^\/]+)$/);
+          if (storefrontMatch && !pathname.includes('.')) {
+              const slug = storefrontMatch[1];
+              const seoUrl = new URL(`/shop/${slug}/seo-bot`, request.url);
+              console.log(`[Middleware 🤖] SEO Bot Detected. Rewriting to Storefront SEO Shell: ${seoUrl.pathname}`);
+              return NextResponse.rewrite(seoUrl);
+          }
+      }
+
       const targetUrl = new URL(pathname + search, 'https://tamuu-app.pages.dev');
       const proxyRes = NextResponse.rewrite(targetUrl);
       
