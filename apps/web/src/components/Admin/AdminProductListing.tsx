@@ -223,7 +223,7 @@ export const AdminProductListing: React.FC = () => {
                                                         <div className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center border border-white/5">
                                                             <Store className="w-4 h-4 text-slate-500" />
                                                         </div>
-                                                        <p className="font-bold text-slate-300 uppercase tracking-tight text-xs italic">{product.nama_toko || product.custom_store_name || 'Admin Listing'}</p>
+                                                        <p className="font-bold text-slate-300 uppercase tracking-tight text-xs italic">{product.nama_toko || product.custom_store_name || ''}</p>
                                                     </div>
                                                 </td>
                                                 <td className="px-10 py-8">

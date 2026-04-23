@@ -2067,19 +2067,18 @@ export default {
 
                     // Handle Admin fallback gracefully
                     if (vendorId === 'admin') {
-                        return json({ 
-                            success: true, 
-                            stats: { 
-                                nama_toko: 'Tamuu Official',
+                        return json({
+                            success: true,
+                            stats: {
+                                nama_toko: '',
                                 kontak_utama: 'chat',
                                 total_products: 0,
                                 total_wishlist: 0,
                                 avg_rating: 5,
                                 review_count: 0
-                            } 
+                            }
                         }, corsHeaders);
                     }
-
                     const stats = await env.DB.prepare(`
                         SELECT
                             (SELECT COUNT(*) FROM shop_products WHERE vendor_id = ? AND status = 'PUBLISHED') as total_products,

@@ -102,7 +102,7 @@ export const ProductCard = ({ product, isSmall = false, onAdClick, priority = fa
                         </p>
                         
                         <p className={`${isSmall ? 'text-[6px] md:text-[7px]' : 'text-[7px] md:text-[8px]'} font-black text-[#FFBF00] uppercase tracking-widest mt-0.5 truncate`}>
-                            {product.isAd ? 'Sponsored' : (product.nama_toko || product.custom_store_name || (product.is_admin_listing ? 'Official Partner' : 'Toko Rakyat'))}
+                            {product.isAd ? 'Sponsored' : (product.nama_toko || product.custom_store_name || '')}
                         </p>
                     </div>
 
