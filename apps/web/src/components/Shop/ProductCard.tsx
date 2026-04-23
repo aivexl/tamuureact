@@ -82,7 +82,7 @@ export const ProductCard = React.memo(({ product, navigate, isSmall = false, onA
                         </p>
                         
                         <p className={`${isSmall ? 'text-[6px] md:text-[7px]' : 'text-[7px] md:text-[8px]'} font-black text-[#FFBF00] uppercase tracking-widest mt-0.5 truncate`}>
-                            {product.isAd ? 'Sponsored' : (product.is_admin_listing ? (product.custom_store_name || 'Admin') : product.nama_toko)}
+                            {product.isAd ? 'Sponsored' : (product.nama_toko || product.custom_store_name || (product.is_admin_listing ? 'Official Partner' : 'Toko Rakyat'))}
                         </p>
                     </div>
 
