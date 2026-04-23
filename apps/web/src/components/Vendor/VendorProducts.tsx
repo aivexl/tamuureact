@@ -254,7 +254,6 @@ export const VendorProducts: React.FC = () => {
         if (finalStatus === 'PUBLISHED') {
             const missingFields = [];
             if (!namaProduk.trim()) missingFields.push('Nama Produk/Jasa');
-            if (!hargaEstimasi) missingFields.push('Harga (Rp)');
             if (!finalKategori) missingFields.push('Kategori');
             if (!kota) missingFields.push('Kota/Kabupaten');
             if (images.length < 2) missingFields.push('Minimal 2 Foto');
@@ -563,7 +562,7 @@ export const VendorProducts: React.FC = () => {
                                                 <div className="space-y-3">
                                                     <div className="flex flex-col ml-1">
                                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Harga (Rp)</label>
-                                                        <span className="text-[8px] font-bold text-rose-400/60 uppercase tracking-widest mt-0.5">(Wajib Diisi)</span>
+                                                        <span className="text-[8px] font-bold text-slate-400/60 uppercase tracking-widest mt-0.5">(Opsional)</span>
                                                     </div>
                                                     <div className="relative">
                                                         <div className="absolute left-6 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">Rp</div>
