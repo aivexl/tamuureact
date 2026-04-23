@@ -96,7 +96,9 @@ export const ProductCard = ({ product, isSmall = false, onAdClick, priority = fa
                         </div>
 
                         <p className={`${isSmall ? 'text-[9px] md:text-xs' : 'text-[11px] md:text-sm'} font-black text-[#0A1128] truncate`}>
-                            {product.harga_estimasi ? formatCurrency(Number(product.harga_estimasi)) : 'Tanya Harga'}
+                            {product.harga_estimasi && !isNaN(Number(product.harga_estimasi)) && Number(product.harga_estimasi) !== 0
+                                ? formatCurrency(product.harga_estimasi) 
+                                : 'Hubungi Vendor'}
                         </p>
                         
                         <p className={`${isSmall ? 'text-[6px] md:text-[7px]' : 'text-[7px] md:text-[8px]'} font-black text-[#FFBF00] uppercase tracking-widest mt-0.5 truncate`}>

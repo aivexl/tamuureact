@@ -635,9 +635,9 @@ export const ProductDetailClient: React.FC = () => {
                             <div className="py-6 border-y border-slate-50">
                                 <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Estimasi Harga</p>
                                 <p className="text-4xl font-black text-[#0A1128] tracking-tighter">
-                                    {product.harga_estimasi && !isNaN(Number(product.harga_estimasi)) 
+                                    {product.harga_estimasi && !isNaN(Number(product.harga_estimasi)) && Number(product.harga_estimasi) !== 0
                                         ? formatCurrency(product.harga_estimasi) 
-                                        : (product.harga_estimasi || 'Tanyakan Harga')}
+                                        : 'Hubungi Vendor'}
                                 </p>
                             </div>
 
