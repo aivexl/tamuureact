@@ -509,7 +509,6 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
             const missingFields = [];
             if (!formData.nama_produk.trim()) missingFields.push('Nama Produk/Jasa');
             if (!formData.custom_store_name.trim()) missingFields.push('Nama Toko');
-            if (!formData.harga_estimasi) missingFields.push('Harga (Rp)');
             if (!finalKategori) missingFields.push('Kategori');
             if (!formData.kota) missingFields.push('Wilayah Operasional');
             if (formData.images.length < 2) missingFields.push('Minimal 2 Foto');
@@ -664,7 +663,7 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                                 <div className="space-y-3">
                                     <div className="flex flex-col ml-1">
                                         <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Harga (Rp)</label>
-                                        <span className="text-[8px] font-bold text-rose-400/60 uppercase tracking-widest mt-0.5">(Wajib Diisi)</span>
+                                        <span className="text-[8px] font-bold text-teal-400/60 uppercase tracking-widest mt-0.5">(Opsional)</span>
                                     </div>
                                     <div className="relative">
                                         <div className="absolute left-7 top-1/2 -translate-y-1/2 text-sm font-black text-slate-500">Rp</div>
