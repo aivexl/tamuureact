@@ -1536,6 +1536,27 @@ export const feedback = {
     }
 };
 
+// ============================================
+// NOTIFICATIONS API
+// ============================================
+export const notifications = {
+    async list() {
+        const res = await safeFetch(`${API_BASE}/api/notifications`);
+        if (!res.ok) throw new Error('Failed to fetch notifications');
+        return res.json();
+    },
+
+    async markRead(notificationId?: string) {
+        const res = await safeFetch(`${API_BASE}/api/notifications/read`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ notificationId })
+        });
+        if (!res.ok) throw new Error('Failed to mark notification as read');
+        return res.json();
+    }
+};
+
 // Default export for easy migration
 export default {
     templates,
@@ -1557,6 +1578,7 @@ export default {
     analytics,
     healthCheck,
     feedback,
+    notifications,
     safeFetch,
     API_BASE
 };
