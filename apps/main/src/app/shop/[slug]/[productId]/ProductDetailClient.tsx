@@ -60,18 +60,7 @@ import { AnimatedCopyIcon } from '@/components/ui/AnimatedCopyIcon';
 import { StarRating } from '@/components/Shop/StarRating';
 import { FeaturedAdsScroller } from '@/components/Shop/FeaturedAdsScroller';
 import { ProductCard } from '@/components/Shop/ProductCard';
-
-const XLogoIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-        <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
-    </svg>
-);
-
-const TikTokIcon = ({ className }: { className?: string }) => (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-        <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
-    </svg>
-);
+import { XLogoIcon, TikTokIcon } from '@/components/ui/Icons';
 
 export const ProductDetailClient: React.FC = () => {
     const params = useParams();
@@ -503,7 +492,7 @@ export const ProductDetailClient: React.FC = () => {
         }, {
             onSuccess: (data) => {
                 toast.success(data.action === 'added' ? 'Ditambahkan ke wishlist' : 'Dihapus dari wishlist', {
-                    icon: <Heart className={`w-4 h-4 \${data.action === 'added' ? 'fill-rose-500 text-rose-500' : ''}`} />,
+                    icon: <Heart className={`w-4 h-4 ${data.action === 'added' ? 'fill-rose-500 text-rose-500' : ''}`} />,
                 });
             },
             onError: () => {
@@ -519,7 +508,7 @@ export const ProductDetailClient: React.FC = () => {
     if (isLoadingProduct) return <div className="min-h-screen bg-white flex items-center justify-center"><PremiumLoader color="#0A1128" /></div>;
     if (!product) return <div className="min-h-screen bg-white flex flex-col items-center justify-center text-[#0A1128]">
         <h2 className="text-2xl font-black mb-4">Produk Tidak Ditemukan</h2>
-        <button onClick={() => router.push(`/shop/\${slug === 'admin' ? 'umum' : (slug || 'umum')}`)} className="text-[#FFBF00] font-bold">Kembali ke Toko</button>
+        <button onClick={() => router.push(`/shop/${slug === 'admin' ? 'umum' : (slug || 'umum')}`)} className="text-[#FFBF00] font-bold">Kembali ke Toko</button>
     </div>;
 
     const images = product.images || [];
@@ -567,7 +556,7 @@ export const ProductDetailClient: React.FC = () => {
                                 <button
                                     key={idx}
                                     onClick={() => setCurrentImageIndex(idx)}
-                                    className={`relative w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all flex-shrink-0 \${
+                                    className={`relative w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all flex-shrink-0 ${
                                         idx === currentImageIndex ? 'border-[#FFBF00]' : 'border-transparent opacity-60'
                                     }`}
                                 >
@@ -619,21 +608,21 @@ export const ProductDetailClient: React.FC = () => {
                                         <div className="flex items-center gap-4">
                                             <div className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-all duration-300">
                                                 {product.shopee_url || product.m_shopee_url || vendorStats?.shopee_url ? (
-                                                    <a href={product.shopee_url?.startsWith('http') ? product.shopee_url : `https://\${product.shopee_url || product.m_shopee_url || vendorStats?.shopee_url}`} target="_blank" rel="noreferrer">
+                                                    <a href={product.shopee_url?.startsWith('http') ? product.shopee_url : `https://${product.shopee_url || product.m_shopee_url || vendorStats?.shopee_url}`} target="_blank" rel="noreferrer">
                                                         <img src="/images/logos/marketplace/logo_shopee.png" alt="Shopee" className="w-7 h-7 object-contain" />
                                                     </a>
                                                 ) : null}
                                             </div>
                                             <div className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-all duration-300">
                                                 {product.tokopedia_url || product.m_tokopedia_url || vendorStats?.tokopedia_url ? (
-                                                    <a href={product.tokopedia_url?.startsWith('http') ? product.tokopedia_url : `https://\${product.tokopedia_url || product.m_tokopedia_url || vendorStats?.tokopedia_url}`} target="_blank" rel="noreferrer">
+                                                    <a href={product.tokopedia_url?.startsWith('http') ? product.tokopedia_url : `https://${product.tokopedia_url || product.m_tokopedia_url || vendorStats?.tokopedia_url}`} target="_blank" rel="noreferrer">
                                                         <img src="/images/logos/marketplace/logo_tokopedia.png" alt="Tokopedia" className="w-7 h-7 object-contain" />
                                                     </a>
                                                 ) : null}
                                             </div>
                                             <div className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-all duration-300">
                                                 {product.tiktokshop_url || product.m_tiktokshop_url || vendorStats?.tiktokshop_url ? (
-                                                    <a href={product.tiktokshop_url?.startsWith('http') ? product.tiktokshop_url : `https://\${product.tiktokshop_url || product.m_tiktokshop_url || vendorStats?.tiktokshop_url}`} target="_blank" rel="noreferrer">
+                                                    <a href={product.tiktokshop_url?.startsWith('http') ? product.tiktokshop_url : `https://${product.tiktokshop_url || product.m_tiktokshop_url || vendorStats?.tiktokshop_url}`} target="_blank" rel="noreferrer">
                                                         <img src="/images/logos/marketplace/logo-tiktokshop.png" alt="TikTok Shop" className="w-7 h-7 object-contain" />
                                                     </a>
                                                 ) : null}
@@ -658,7 +647,7 @@ export const ProductDetailClient: React.FC = () => {
                                 <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5">
                                     <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white border-4 border-white shadow-lg flex-shrink-0">
                                         <img 
-                                            src={product.is_admin_listing ? `https://api.dicebear.com/7.x/initials/svg?seed=\${product.custom_store_name || 'Admin'}` : (product.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=\${product.nama_toko}`)} 
+                                            src={product.is_admin_listing ? `https://api.dicebear.com/7.x/initials/svg?seed=${product.custom_store_name || 'Admin'}` : (product.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${product.nama_toko}`)} 
                                             alt={product.is_admin_listing ? product.custom_store_name : product.nama_toko} 
                                             className="w-full h-full object-cover" 
                                         />
@@ -694,7 +683,7 @@ export const ProductDetailClient: React.FC = () => {
                                         </div>
                                     </div>
                                     {!product.is_admin_listing && (
-                                        <Link href={`/shop/\${product.vendor_slug === 'admin' ? 'umum' : (slug || 'umum')}`} className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all shadow-sm">
+                                        <Link href={`/shop/${product.vendor_slug === 'admin' ? 'umum' : (slug || 'umum')}`} className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center hover:bg-[#0A1128] hover:text-white transition-all shadow-sm">
                                             <ChevronRight className="w-5 h-5" />
                                         </Link>
                                     )}
@@ -709,7 +698,7 @@ export const ProductDetailClient: React.FC = () => {
                                             <div className="h-4 w-1 bg-[#FFBF00] rounded-full" />
                                             <h2 className="text-[11px] font-black uppercase tracking-widest text-[#0A1128]">Produk Lain Dari Toko Ini</h2>
                                         </div>
-                                        <Link href={`/shop/\${product.vendor_slug}`} className="text-[9px] font-black uppercase tracking-widest text-[#FFBF00] hover:text-[#0A1128] transition-colors">Lihat Semua</Link>
+                                        <Link href={`/shop/${product.vendor_slug}`} className="text-[9px] font-black uppercase tracking-widest text-[#FFBF00] hover:text-[#0A1128] transition-colors">Lihat Semua</Link>
                                     </div>
                                     
                                     <div className="relative group/other-products">
@@ -934,7 +923,7 @@ export const ProductDetailClient: React.FC = () => {
                                             No. Produk: <span className="text-slate-600 font-black">tamuu-shop-{product.id?.substring(0, 8)?.toUpperCase()}</span>
                                         </span>
                                         <div className="w-10 h-10 rounded-lg bg-white border border-slate-100 flex items-center justify-center text-slate-400 group-hover:text-[#FFBF00] transition-all">
-                                            <AnimatedCopyIcon text={`tamuu-shop-\${product.id?.substring(0, 8)?.toUpperCase()}`} size={16} successMessage="ID Produk disalin!" />
+                                            <AnimatedCopyIcon text={`tamuu-shop-${product.id?.substring(0, 8)?.toUpperCase()}`} size={16} successMessage="ID Produk disalin!" />
                                         </div>
                                     </div>
                                     <button
@@ -1096,7 +1085,7 @@ export const ProductDetailClient: React.FC = () => {
                                                 >
                                                     <Star 
                                                         size={22}
-                                                        className={`transition-colors \${s <= userRating ? 'fill-[#FFBF00] text-[#FFBF00]' : 'text-slate-200'}`} 
+                                                        className={`transition-colors ${s <= userRating ? 'fill-[#FFBF00] text-[#FFBF00]' : 'text-slate-200'}`} 
                                                     />
                                                 </button>
                                             ))}
@@ -1157,7 +1146,7 @@ export const ProductDetailClient: React.FC = () => {
                                                     <Star 
                                                         key={s}
                                                         size={10} 
-                                                        className={`\${s <= review.rating ? 'fill-[#FFBF00] text-[#FFBF00]' : 'text-slate-200'}`} 
+                                                        className={`${s <= review.rating ? 'fill-[#FFBF00] text-[#FFBF00]' : 'text-slate-200'}`} 
                                                     />
                                                 ))}
                                             </div>
@@ -1221,12 +1210,12 @@ export const ProductDetailClient: React.FC = () => {
                 <div className="max-w-3xl mx-auto flex gap-4 pointer-events-auto">
                     <button
                         onClick={toggleWishlist}
-                        className={`w-16 h-16 rounded-[2rem] border flex items-center justify-center transition-all shadow-xl \${isWishlisted
+                        className={`w-16 h-16 rounded-[2rem] border flex items-center justify-center transition-all shadow-xl ${isWishlisted
                             ? 'bg-rose-50 border-rose-200 text-rose-500'
                             : 'bg-white border-slate-100 text-slate-300 hover:text-rose-500 hover:border-rose-200'
                             }`}
                     >
-                        <Heart className={`w-6 h-6 \${isWishlisted ? 'fill-current' : ''}`} />
+                        <Heart className={`w-6 h-6 ${isWishlisted ? 'fill-current' : ''}`} />
                     </button>
 
                     <button

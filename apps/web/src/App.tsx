@@ -202,6 +202,7 @@ const App: React.FC = () => {
                         <Route path="/blog/*" element={<MainLayout><BlogRouter /></MainLayout>} />
                         <Route path="/shop/:slug" element={<StorefrontPage />} />
                         <Route path="/shop/:slug/:productId" element={<ProductDetailPage />} />
+                        <Route path="/product/:productId" element={<ProductDetailPage />} />
                         
                         {/* Preview Routes */}
                         <Route path="/preview/:slug" element={<PreviewPage />} />

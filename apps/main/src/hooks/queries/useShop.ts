@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { shop, admin } from '../../lib/api';
+import { shop, admin } from '@/lib/api';
 import { useStore } from '@tamuu/shared';
 import { toast } from 'react-hot-toast';
 

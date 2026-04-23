@@ -49,7 +49,7 @@ export const safeFetch = async (url: string, options: RequestInit = {}) => {
     
     const headers = {
         ...options.headers,
-        ...(token && { 'Authorization': `Bearer \${token.trim()}` })
+        ...(token && { 'Authorization': `Bearer ${token.trim()}` })
     };
 
     try {
@@ -75,13 +75,13 @@ export const safeFetch = async (url: string, options: RequestInit = {}) => {
 export async function getShopData() {
   try {
     const [carouselRes, categoriesRes, productsRes, adsSpecialRes, adsBannerRes, specialProductsRes, featuredProductsRes] = await Promise.all([
-      fetch(\`\${API_BASE}/api/shop/carousel\`, { next: { revalidate: 3600 } }),
-      fetch(\`\${API_BASE}/api/categories\`, { next: { revalidate: 86400 } }),
-      fetch(\`\${API_BASE}/api/shop/products/discovery\`, { next: { revalidate: 1800 } }),
-      fetch(\`\${API_BASE}/api/shop/ads?position=SPECIAL_FOR_YOU_HOME\`, { next: { revalidate: 3600 } }),
-      fetch(\`\${API_BASE}/api/shop/ads?position=SHOP_SPECIAL_FOR_YOU\`, { next: { revalidate: 3600 } }),
-      fetch(\`\${API_BASE}/api/shop/products/special\`, { next: { revalidate: 1800 } }),
-      fetch(\`\${API_BASE}/api/shop/products/featured\`, { next: { revalidate: 1800 } })
+      fetch(`${API_BASE}/api/shop/carousel`, { next: { revalidate: 3600 } }),
+      fetch(`${API_BASE}/api/categories`, { next: { revalidate: 86400 } }),
+      fetch(`${API_BASE}/api/shop/products/discovery`, { next: { revalidate: 1800 } }),
+      fetch(`${API_BASE}/api/shop/ads?position=SPECIAL_FOR_YOU_HOME`, { next: { revalidate: 3600 } }),
+      fetch(`${API_BASE}/api/shop/ads?position=SHOP_SPECIAL_FOR_YOU`, { next: { revalidate: 3600 } }),
+      fetch(`${API_BASE}/api/shop/products/special`, { next: { revalidate: 1800 } }),
+      fetch(`${API_BASE}/api/shop/products/featured`, { next: { revalidate: 1800 } })
     ]);
 
     const carousel = await carouselRes.json();
@@ -114,7 +114,7 @@ export async function getBlogPosts(params: { limit?: number; offset?: number; ca
         if (params.offset) query.append('offset', params.offset.toString());
         if (params.category) query.append('category', params.category);
 
-        const res = await fetch(\`\${API_BASE}/api/blog?\${query.toString()}\`, { next: { revalidate: 600 } });
+        const res = await fetch(`${API_BASE}/api/blog?${query.toString()}`, { next: { revalidate: 600 } });
         if (!res.ok) return [];
         const data = await res.json();
         return Array.isArray(data) ? data : (data.posts || data.items || []);
@@ -126,7 +126,7 @@ export async function getBlogPosts(params: { limit?: number; offset?: number; ca
 
 export async function getBlogCategories() {
     try {
-        const res = await fetch(\`\${API_BASE}/api/blog/categories\`, { next: { revalidate: 3600 } });
+        const res = await fetch(`${API_BASE}/api/blog/categories`, { next: { revalidate: 3600 } });
         if (!res.ok) return [];
         const data = await res.json();
         return Array.isArray(data) ? data : [];
@@ -138,7 +138,7 @@ export async function getBlogCategories() {
 
 export async function getBlogPost(slug: string) {
     try {
-        const res = await fetch(\`\${API_BASE}/api/blog/post/\${slug}\`, { next: { revalidate: 60 } });
+        const res = await fetch(`${API_BASE}/api/blog/post/${slug}`, { next: { revalidate: 60 } });
         if (!res.ok) return null;
         return await res.json();
     } catch (err) {
@@ -149,7 +149,7 @@ export async function getBlogPost(slug: string) {
 
 export async function getRelatedPosts(postId: string) {
     try {
-        const res = await fetch(\`\${API_BASE}/api/blog/related/\${postId}\`, { next: { revalidate: 3600 } });
+        const res = await fetch(`${API_BASE}/api/blog/related/${postId}`, { next: { revalidate: 3600 } });
         if (!res.ok) return [];
         return await res.json();
     } catch (err) {
@@ -160,7 +160,7 @@ export async function getRelatedPosts(postId: string) {
 
 export async function getBlogCarousel() {
     try {
-        const res = await fetch(\`\${API_BASE}/api/blog/carousel\`, { next: { revalidate: 3600 } });
+        const res = await fetch(`${API_BASE}/api/blog/carousel`, { next: { revalidate: 3600 } });
         if (!res.ok) return [];
         const data = await res.json();
         return Array.isArray(data) ? data : [];
@@ -173,7 +173,7 @@ export async function getBlogCarousel() {
 // Analytics (Client-side)
 export async function trackBlogEvent(postId: string, event: 'view' | 'read') {
     try {
-        await fetch(\`\${API_BASE}/api/blog/analytics\`, {
+        await fetch(`${API_BASE}/api/blog/analytics`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ post_id: postId, event_type: event })
@@ -185,7 +185,7 @@ export async function trackBlogEvent(postId: string, event: 'view' | 'read') {
 
 export async function trackAdClick(adId: string) {
   try {
-    await fetch(\`\${API_BASE}/api/shop/ads/click/\${adId}\`, { method: 'POST' });
+    await fetch(`${API_BASE}/api/shop/ads/click/${adId}`, { method: 'POST' });
   } catch (err) {
     console.error('[API trackAdClick] Error:', err);
   }
@@ -193,7 +193,7 @@ export async function trackAdClick(adId: string) {
 
 export async function trackAdView(adId: string) {
   try {
-    await fetch(\`\${API_BASE}/api/shop/ads/view/\${adId}\`, { method: 'POST' });
+    await fetch(`${API_BASE}/api/shop/ads/view/${adId}`, { method: 'POST' });
   } catch (err) {
     console.error('[API trackAdView] Error:', err);
   }
@@ -204,21 +204,21 @@ export async function trackAdView(adId: string) {
 // ============================================
 export const templates = {
     async list(type: 'invitation' | 'display' = 'invitation') {
-        const res = await safeFetch(\`\${API_BASE}/api/templates?type=\${type}\`);
+        const res = await safeFetch(`${API_BASE}/api/templates?type=${type}`);
         if (!res.ok) throw new Error('Failed to fetch templates');
         const data = await res.json();
         return sanitizeValue(data);
     },
 
     async get(id: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/templates/\${id}\`);
+        const res = await safeFetch(`${API_BASE}/api/templates/${id}`);
         if (!res.ok) throw new Error('Template not found');
         const data = await res.json();
         return sanitizeValue(data);
     },
 
     async create(template: any) {
-        const res = await safeFetch(\`\${API_BASE}/api/templates\`, {
+        const res = await safeFetch(`${API_BASE}/api/templates`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sanitizeValue(template))
@@ -227,7 +227,7 @@ export const templates = {
     },
 
     async update(id: string, template: any) {
-        const res = await safeFetch(\`\${API_BASE}/api/templates/\${id}\`, {
+        const res = await safeFetch(`${API_BASE}/api/templates/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sanitizeValue(template))
@@ -236,7 +236,7 @@ export const templates = {
     },
 
     async delete(id: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/templates/\${id}\`, {
+        const res = await safeFetch(`${API_BASE}/api/templates/${id}`, {
             method: 'DELETE'
         });
         return res.json();
@@ -248,7 +248,7 @@ export const templates = {
 // ============================================
 export const invitations = {
     async list(userId: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/invitations?user_id=\${userId}\`);
+        const res = await safeFetch(`${API_BASE}/api/invitations?user_id=${userId}`);
         if (!res.ok) throw new Error('Failed to fetch invitations');
         const data = await res.json();
         return sanitizeValue(data);
@@ -257,10 +257,10 @@ export const invitations = {
     async get(id: string) {
         const isUuid = id.includes('-') && id.length > 20;
         const endpoint = isUuid 
-            ? \`/api/invitations/\${id}\`
-            : \`/api/preview/\${id}\`;
+            ? `/api/invitations/${id}`
+            : `/api/preview/${id}`;
             
-        const res = await safeFetch(\`\${API_BASE}\${endpoint}\`);
+        const res = await safeFetch(`${API_BASE}${endpoint}`);
         if (!res.ok) throw new Error('Invitation not found');
         let data = await res.json();
         if (endpoint.startsWith('/api/preview/') && data.data) {
@@ -270,14 +270,14 @@ export const invitations = {
     },
 
     async getBySlug(slug: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/invitation/\${slug}\`);
+        const res = await safeFetch(`${API_BASE}/api/invitation/${slug}`);
         if (!res.ok) throw new Error('Invitation not found');
         const data = await res.json();
         return sanitizeValue(data);
     },
 
     async create(invitation: any) {
-        const res = await safeFetch(\`\${API_BASE}/api/invitations\`, {
+        const res = await safeFetch(`${API_BASE}/api/invitations`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sanitizeValue(invitation))
@@ -288,7 +288,7 @@ export const invitations = {
     },
 
     async update(id: string, invitation: any) {
-        const res = await safeFetch(\`\${API_BASE}/api/invitations/\${id}\`, {
+        const res = await safeFetch(`${API_BASE}/api/invitations/${id}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sanitizeValue(invitation))
@@ -299,7 +299,7 @@ export const invitations = {
     },
 
     async delete(id: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/invitations/\${id}\`, {
+        const res = await safeFetch(`${API_BASE}/api/invitations/${id}`, {
             method: 'DELETE'
         });
         return res.json();
@@ -311,7 +311,7 @@ export const invitations = {
 // ============================================
 export const rsvp = {
     async list(invitationId: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/rsvp?invitation_id=\${invitationId}\`);
+        const res = await safeFetch(`${API_BASE}/api/rsvp?invitation_id=${invitationId}`);
         if (!res.ok) throw new Error('Failed to fetch RSVP list');
         const data = await res.json();
         return sanitizeValue(data);
@@ -319,7 +319,7 @@ export const rsvp = {
 
     async submit(invitationId: string | any, data?: any) {
         const finalData = data ? { invitation_id: invitationId, ...data } : invitationId;
-        const res = await safeFetch(\`\${API_BASE}/api/rsvp\`, {
+        const res = await safeFetch(`${API_BASE}/api/rsvp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sanitizeValue(finalData))
@@ -333,7 +333,7 @@ export const rsvp = {
 // ============================================
 export const users = {
     async getProfile(userId: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/auth/me?uid=\${userId}\`);
+        const res = await safeFetch(`${API_BASE}/api/auth/me?uid=${userId}`);
         if (!res.ok) throw new Error('Failed to fetch profile');
         const data = await res.json();
         return sanitizeValue(data);
@@ -342,7 +342,7 @@ export const users = {
     async updateProfile(userId: string | any, profile?: any) {
         const id = profile ? userId : (userId.id || userId.userId);
         const data = profile || userId;
-        const res = await safeFetch(\`\${API_BASE}/api/user/profile\`, {
+        const res = await safeFetch(`${API_BASE}/api/user/profile`, {
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(sanitizeValue({ ...data, id }))
@@ -401,7 +401,7 @@ export interface Product {
 
 export const shop = {
     async getVendorMe(userId: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/shop/vendor/me?userId=\${userId}&_t=\${Date.now()}\`, {
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/me?userId=${userId}&_t=${Date.now()}`, {
             cache: 'no-store'
         });
         if (!res.ok) throw new Error('Failed to fetch vendor profile');
@@ -411,46 +411,46 @@ export const shop = {
 
     async getVendorProducts(vendorId: string) {
         if (!vendorId) return [];
-        const res = await safeFetch(\`\${API_BASE}/api/shop/vendor/products?vendor_id=\${vendorId}&_t=\${Date.now()}\`);
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/products?vendor_id=${vendorId}&_t=${Date.now()}`);
         if (!res.ok) throw new Error('Failed to fetch vendor products');
         const data = await res.json();
         return sanitizeValue(data.products || []);
     },
 
     async getProductReviews(productId: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/shop/products/\${productId}/reviews\`);
+        const res = await safeFetch(`${API_BASE}/api/shop/products/${productId}/reviews`);
         if (!res.ok) throw new Error('Failed to fetch product reviews');
         const data = await res.json();
         return sanitizeValue(data.reviews || []);
     },
 
     async getVendorStats(vendorId: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/shop/vendor/stats?vendor_id=\${vendorId}\`);
+        const res = await safeFetch(`${API_BASE}/api/shop/vendor/stats?vendor_id=${vendorId}`);
         const data = await res.json();
         return sanitizeValue(data.stats);
     },
 
     async getRecommendations(productId: string, category: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/shop/products/recommendations?product_id=\${productId}&category=\${encodeURIComponent(category)}\`);
+        const res = await safeFetch(`${API_BASE}/api/shop/products/recommendations?product_id=${productId}&category=${encodeURIComponent(category)}`);
         const data = await res.json();
         return sanitizeValue(data.products || []);
     },
 
     async getProduct(id: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/shop/product?id=\${id}&_t=\${Date.now()}\`);
+        const res = await safeFetch(`${API_BASE}/api/shop/product?id=${id}&_t=${Date.now()}`);
         const data = await res.json();
         return sanitizeValue(data.product);
     },
 
     async getAds(position?: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/shop/ads?position=\${position || ''}\`);
+        const res = await safeFetch(`${API_BASE}/api/shop/ads?position=${position || ''}`);
         const data = await res.json();
         return sanitizeValue(data.ads || []);
     },
 
     async track(vendorId: string, actionType: string, productId?: string) {
         try {
-            await safeFetch(\`\${API_BASE}/api/shop/analytics/track\`, {
+            await safeFetch(`${API_BASE}/api/shop/analytics/track`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ vendor_id: vendorId, action_type: actionType, product_id: productId })
@@ -459,19 +459,19 @@ export const shop = {
     },
 
     async getWishlist(userId: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/shop/wishlist?user_id=\${userId}\`);
+        const res = await safeFetch(`${API_BASE}/api/shop/wishlist?user_id=${userId}`);
         const data = await res.json();
         return sanitizeValue(data.wishlist || []);
     },
 
     async getSystemSettings() {
-        const res = await safeFetch(\`\${API_BASE}/api/system/settings\`);
+        const res = await safeFetch(`${API_BASE}/api/system/settings`);
         if (!res.ok) return { settings: { global_chat_mode: 'whatsapp' } };
         return res.json();
     },
 
     async toggleWishlist(userId: string, productId: string, email?: string) {
-        const res = await safeFetch(\`\${API_BASE}/api/shop/wishlist/toggle\`, {
+        const res = await safeFetch(`${API_BASE}/api/shop/wishlist/toggle`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: userId, product_id: productId, email })
@@ -480,12 +480,37 @@ export const shop = {
     },
 
     async submitReport(data: any) {
-        const res = await safeFetch(\`\${API_BASE}/api/shop/reports\`, {
+        const res = await safeFetch(`${API_BASE}/api/shop/reports`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
         });
         return res.json();
+    },
+
+    async submitReview(productId: string, data: { rating: number; comment: string }, token: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/products/${productId}/reviews`, {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(sanitizeValue(data))
+        });
+        if (!res.ok) {
+            const errData = await res.json();
+            throw new Error(errData.error || 'Failed to submit review');
+        }
+        return res.json();
+    },
+
+    async getStorefront(slug: string, token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/shop/storefront?slug=${slug}`, { headers });
+        if (!res.ok) throw new Error('Storefront not found');
+        const data = await res.json();
+        return sanitizeValue(data);
     }
 };
 
@@ -495,8 +520,8 @@ export const shop = {
 export const admin = {
     async getShopReports(token?: string) {
         const headers: Record<string, string> = {};
-        if (token) headers['Authorization'] = \`Bearer \${token}\`;
-        const res = await safeFetch(\`\${API_BASE}/api/admin/shop/reports\`, { headers });
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/reports`, { headers });
         if (!res.ok) throw new Error('Failed to fetch shop reports');
         const data = await res.json();
         return sanitizeValue(data.reports || []);
@@ -504,8 +529,8 @@ export const admin = {
 
     async updateShopReportStatus(reportId: string, status: string, token?: string) {
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = \`Bearer \${token}\`;
-        const res = await safeFetch(\`\${API_BASE}/api/admin/shop/reports/\${reportId}\`, {
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/reports/${reportId}`, {
             method: 'PATCH',
             headers,
             body: JSON.stringify({ status })
@@ -516,8 +541,8 @@ export const admin = {
 
     async adminListVendors(token?: string) {
         const headers: Record<string, string> = {};
-        if (token) headers['Authorization'] = \`Bearer \${token}\`;
-        const res = await safeFetch(\`\${API_BASE}/api/admin/shop/vendors\`, { headers });
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/vendors`, { headers });
         if (!res.ok) throw new Error('Failed to fetch vendors');
         const data = await res.json();
         return sanitizeValue(data.vendors || []);
@@ -525,8 +550,8 @@ export const admin = {
 
     async updateVendor(id: string, data: any, token?: string) {
         const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-        if (token) headers['Authorization'] = \`Bearer \${token}\`;
-        const res = await safeFetch(\`\${API_BASE}/api/admin/shop/vendors/\${id}\`, {
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/vendors/${id}`, {
             method: 'PATCH',
             headers,
             body: JSON.stringify(sanitizeValue(data))
