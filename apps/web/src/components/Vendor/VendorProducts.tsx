@@ -7,7 +7,8 @@ import {
     useVendorProducts,
     useCreateVendorProduct,
     useUpdateVendorProduct,
-    useDeleteVendorProduct
+    useDeleteVendorProduct,
+    useShopCategories
 } from '../../hooks/queries/useShop';
 import api from '../../lib/api';
 import { formatCurrency } from '../../lib/utils';
@@ -52,6 +53,12 @@ export const VendorProducts: React.FC = () => {
     const vendorId = vendorData?.vendor?.id;
 
     const { data: products = [], isLoading } = useVendorProducts(vendorId);
+    const { data: categoryList = [] } = useShopCategories();
+
+    const SHOP_CATEGORIES = useMemo(() => {
+        const names = categoryList.map((c: any) => c.name);
+        return [...names, 'Lainnya'];
+    }, [categoryList]);
 
     // Mutations
     const { mutateAsync: createProduct, isPending: isCreating } = useCreateVendorProduct();
@@ -96,16 +103,6 @@ export const VendorProducts: React.FC = () => {
     const [isKotaOpen, setIsKotaOpen] = useState(false);
     const [kotaSearchQuery, setKotaSearchQuery] = useState('');
 
-    const SHOP_CATEGORIES = [
-        'Makeup Artist',
-        'Wedding Organizer',
-        'Dekorasi',
-        'Fotografi',
-        'Catering',
-        'Venue',
-        'Entertainment',
-        'Lainnya'
-    ];
     const [images, setImages] = useState<string[]>([]);
 
     // Reactive Sync Logic: When toggle is ON, pull from vendorData

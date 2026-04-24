@@ -149,6 +149,58 @@ export const templates = {
 };
 
 // ============================================
+// SHOP CATEGORIES API (Admin & Public)
+// ============================================
+export interface ShopCategory {
+    id: string;
+    name: string;
+    slug: string;
+    icon: string;
+    is_active: number;
+}
+
+export const shopCategories = {
+    async listPublic() {
+        const res = await safeFetch(`${API_BASE}/api/shop/categories`);
+        if (!res.ok) throw new Error('Failed to fetch categories');
+        const data = await res.json();
+        return sanitizeValue(data.categories || []);
+    },
+
+    async adminList(token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/categories`, { headers });
+        if (!res.ok) throw new Error('Failed to fetch admin categories');
+        const data = await res.json();
+        return sanitizeValue(data.categories || []);
+    },
+
+    async adminSave(category: any, token?: string) {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/categories`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(sanitizeValue(category))
+        });
+        if (!res.ok) throw new Error('Failed to save category');
+        return await res.json();
+    },
+
+    async adminDelete(id: string, token?: string) {
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/categories/${id}`, {
+            method: 'DELETE',
+            headers
+        });
+        if (!res.ok) throw new Error('Failed to delete category');
+        return await res.json();
+    }
+};
+
+// ============================================
 // INVITATIONS API
 // ============================================
 export const invitations = {

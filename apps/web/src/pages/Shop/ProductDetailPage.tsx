@@ -661,13 +661,13 @@ export const ProductDetailPage: React.FC = () => {
                                     <div className="w-16 h-16 rounded-2xl overflow-hidden bg-white border-4 border-white shadow-lg flex-shrink-0">
                                         <img 
                                             src={product.logo_url || `https://api.dicebear.com/7.x/initials/svg?seed=${product.nama_toko || product.custom_store_name || 'Admin'}`} 
-                                            alt={product.nama_toko || product.custom_store_name || (product.is_admin_listing ? 'Official Partner' : 'Toko Rakyat')} 
+                                            alt={product.nama_toko || product.custom_store_name || ''}
                                             className="w-full h-full object-cover" 
                                         />
                                     </div>
                                     <div className="flex-1 min-w-0 text-center sm:text-left">
                                         <h3 className="text-lg font-black text-[#0A1128] truncate">
-                                            {product.nama_toko || product.custom_store_name || (product.is_admin_listing ? 'Official Partner' : 'Toko Rakyat')}
+                                            {product.nama_toko || product.custom_store_name || ''}
                                         </h3>
                                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center justify-center sm:justify-start gap-1 mb-2">
                                             <MapPin className="w-3 h-3 text-[#FFBF00]" />

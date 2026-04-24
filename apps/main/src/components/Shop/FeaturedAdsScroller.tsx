@@ -25,7 +25,7 @@ export const FeaturedAdsScroller: React.FC = () => {
             nama_produk: ad.nama_produk || ad.title,
             harga_estimasi: ad.harga_estimasi || 0,
             images: [{ image_url: ad.image_url }],
-            nama_toko: ad.nama_toko || ad.custom_store_name || 'Tamuu Official',
+            nama_toko: ad.nama_toko || ad.custom_store_name || '',
             logo_url: ad.logo_url,
             vendor_slug: ad.vendor_slug,
             slug: ad.product_slug,

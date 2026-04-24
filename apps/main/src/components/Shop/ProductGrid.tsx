@@ -16,9 +16,8 @@ export const ProductGrid = ({ products, title }: ProductGridProps) => {
         <div className="space-y-8">
             <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-6 px-4">
                 <h2 className="text-xl md:text-2xl font-black uppercase italic tracking-tighter text-[#0A1128]">{title}</h2>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Showing {Math.min(visibleCount, products.length)} of {products.length} Results</p>
             </div>
-            
+
             <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-center gap-4 md:gap-8 px-4">
                 {products.slice(0, visibleCount).map((p: any) => (
                     <ProductCard key={p.id} product={p} />
@@ -27,7 +26,7 @@ export const ProductGrid = ({ products, title }: ProductGridProps) => {
 
             {visibleCount < products.length && (
                 <div className="flex justify-center pt-12">
-                    <button 
+                    <button
                         onClick={() => setVisibleCount(prev => prev + 10)}
                         className="px-10 py-4 bg-[#0A1128] text-white font-black rounded-2xl text-[10px] uppercase tracking-widest hover:bg-black transition-all active:scale-95 shadow-xl shadow-indigo-100"
                     >
@@ -38,3 +37,4 @@ export const ProductGrid = ({ products, title }: ProductGridProps) => {
         </div>
     );
 };
+

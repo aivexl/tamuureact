@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { shop, admin } from '../../lib/api';
+import { shop, admin, shopCategories } from '../../lib/api';
 import { useStore } from '../../store/useStore';
 import { toast } from 'react-hot-toast';
 
@@ -7,6 +7,13 @@ export const useShopDirectory = (category?: string, query?: string) => {
     return useQuery({
         queryKey: ['shop_directory', category, query],
         queryFn: () => shop.getDirectory(category, query)
+    });
+};
+
+export const useShopCategories = () => {
+    return useQuery({
+        queryKey: ['shop_categories_public'],
+        queryFn: () => shopCategories.listPublic()
     });
 };
 
