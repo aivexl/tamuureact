@@ -1400,9 +1400,9 @@ export default {
 
                 try {
                     const vendor = await env.DB.prepare(
-                        `SELECT m.*, COALESCE(c.nama_kategori, m.category_id) as nama_kategori 
+                        `SELECT m.*, COALESCE(c.name, m.category_id) as nama_kategori 
                          FROM shop_vendors m 
-                         LEFT JOIN shop_category c ON m.category_id = c.id OR m.category_id = c.nama_kategori 
+                         LEFT JOIN shop_category c ON m.category_id = c.id OR m.category_id = c.name 
                          WHERE m.user_id = ?`
                     ).bind(userId).first();
 
@@ -1888,7 +1888,7 @@ export default {
                     const search = getParam('q');
 
                     let query = `
-                        SELECT m.id, m.nama_toko, m.slug, m.logo_url, m.banner_url, m.is_sponsored, m.kota, m.is_landing_featured, m.kontak_utama, c.nama_kategori,
+                        SELECT m.id, m.nama_toko, m.slug, m.logo_url, m.banner_url, m.is_sponsored, m.kota, m.is_landing_featured, m.kontak_utama, c.name as nama_kategori,
                         (SELECT COUNT(*) FROM shop_wishlist sw JOIN shop_products sp ON sw.product_id = sp.id WHERE sp.vendor_id = m.id) as wishlist_count,
                         (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.vendor_id = m.id) as avg_rating,
                         (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.vendor_id = m.id) as review_count
@@ -1901,7 +1901,7 @@ export default {
                     let params = [];
 
                     if (category && category !== 'All' && category !== 'Semua') {
-                        query += ` AND (c.nama_kategori = ? OR m.category_id = ?)`;
+                        query += ` AND (c.name = ? OR m.category_id = ?)`;
                         params.push(category, category);
                     }
                     if (search) {
@@ -2288,7 +2288,7 @@ export default {
                 if (path === '/api/admin/shop/vendors' && method === 'GET') {
                     try {
                         const vendors = await env.DB.prepare(`
-                            SELECT m.*, c.nama_kategori
+                            SELECT m.*, c.name as nama_kategori
                             FROM shop_vendors m
                             LEFT JOIN shop_category c ON m.category_id = c.id
                             ORDER BY m.created_at DESC
@@ -3102,7 +3102,7 @@ export default {
 
                 try {
                     const vendor = await env.DB.prepare(`
-                        SELECT m.*, c.nama_kategori, m.kontak_utama,
+                        SELECT m.*, c.name as nama_kategori, m.kontak_utama,
                         (SELECT AVG(rating) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.vendor_id = m.id) as avg_rating,
                         (SELECT COUNT(*) FROM shop_product_reviews r JOIN shop_products p ON r.product_id = p.id WHERE p.vendor_id = m.id) as review_count
                         FROM shop_vendors m 
