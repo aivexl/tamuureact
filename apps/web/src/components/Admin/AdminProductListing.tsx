@@ -38,6 +38,7 @@ import { INDONESIA_REGIONS } from '../../constants/regions';
 import { ConfirmationModal } from '../Modals/ConfirmationModal';
 import api, { shopCategories, type ShopCategory } from '../../lib/api';
 import { useQuery } from '@tanstack/react-query';
+import { ShopIcon } from '@tamuu/ui';
 
 // Custom Icons for Tiktok & X
 const TiktokIcon = ({ className }: { className?: string }) => (
@@ -832,7 +833,7 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                                     <ShieldCheck className="w-4 h-4" />
                                 </div>
                                 <p className="text-[10px] font-black text-[#FFBF00] uppercase tracking-widest leading-relaxed">
-                                    Mode Sinkronisasi Aktif: Data kontak dan lokasi mengikuti entri terbaru di registry untuk "{formData.custom_store_name || 'Generic Vendor'}".
+                                    Mode Sinkronisasi Aktif: Data kontak dan lokasi mengikuti entri terbaru di registry for "{formData.custom_store_name || 'Generic Vendor'}".
                                 </p>
                             </m.div>
                         )}
@@ -983,64 +984,6 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
                                             onChange={e => setFormData({...formData, [item.key]: e.target.value})} 
                                             placeholder={item.placeholder} 
                                             className="w-full bg-white/5 border border-white/10 rounded-2xl pl-14 pr-8 py-5 text-sm font-bold text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/10 transition-all backdrop-blur-md" 
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-
-                {/* Right Column */}
-                <div className="lg:col-span-5 space-y-10">
-                    {/* Media Gallery */}
-                    <div className="bg-white/5 backdrop-blur-xl rounded-[2.5rem] border border-white/10 p-10 shadow-2xl">
-                        <div className="flex items-center justify-between mb-10">
-                            <div className="flex flex-col">
-                                <h3 className="text-lg font-black text-white uppercase tracking-tight italic">Galeri Foto</h3>
-                                <span className="text-[8px] font-bold text-rose-400/60 uppercase tracking-widest mt-1">(Minimal 2 Foto)</span>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2">Gunakan foto asli produk</p>
-                            </div>
-                            <span className="px-3 py-1 bg-white/5 border border-white/5 rounded-full text-[10px] font-black text-[#FFBF00] uppercase tracking-widest">{formData.images.length}/5 Foto</span>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-5">
-                            {formData.images.map((url: string, idx: number) => (
-                                <m.div 
-                                    key={idx} 
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    className="aspect-square rounded-3xl overflow-hidden bg-white/5 border border-white/10 relative group shadow-lg"
-                                >
-                                    <img src={url} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" alt="" />
-                                    <button 
-                                        type="button"
-                                        onClick={() => handleRemoveImage(idx)}
-                                        className="absolute inset-0 bg-rose-500/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300"
-                                    >
-                                        <Trash2 className="w-8 h-8" />
-                                    </button>
-                                </m.div>
-                            ))}
-                            {formData.images.length < 5 && (
-                                <div 
-                                    onClick={() => !isProductUploading && fileInputRef.current?.click()}
-                                    className="aspect-square border-2 border-dashed border-white/10 rounded-3xl bg-white/5 hover:bg-white/10 flex flex-col items-center justify-center cursor-pointer transition-all duration-300 group"
-                                >
-                                    {isProductUploading ? (
-                                        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-[#FFBF00]"></div>
-                                    ) : (
-                                        <>
-                                            <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-4 group-hover:bg-[#FFBF00]/10 transition-colors">
-                                                <UploadCloud className="w-6 h-6 text-slate-500 group-hover:text-[#FFBF00] transition-colors" />
-                                            </div>
-                                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] group-hover:text-white transition-colors">Tambah Foto</p>
-                                        </>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                        <input type="file" border-white/10 rounded-2xl pl-14 pr-8 py-5 text-sm font-bold text-white placeholder:text-slate-500 focus:ring-2 focus:ring-indigo-500/50 focus:bg-white/10 transition-all backdrop-blur-md" 
                                         />
                                     </div>
                                 </div>

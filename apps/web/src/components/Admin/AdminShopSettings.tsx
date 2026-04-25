@@ -12,7 +12,7 @@ import { PremiumLoader } from '../ui/PremiumLoader';
 import { admin, shop, storage, safeFetch, API_BASE, shopCategories, ShopCategory } from '../../lib/api';
 import { useStore } from '../../store/useStore';
 import { useAdminProducts, useAdminUpdateProduct, useAdminUpdateVendor, useAdminVendors } from '../../hooks/queries/useShop';
-import { ShopIcon, RECOMMENDED_SHOP_ICONS } from '../ui/ShopIcon';
+import { ShopIcon, RECOMMENDED_SHOP_ICONS } from '@tamuu/ui';
 
 export const AdminShopSettings: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -1121,7 +1121,7 @@ const AdEditorRow: React.FC<{
                             <select
                                 value={localAd.position}
                                 onChange={(e) => updateField('position', e.target.value)}
-                                className="w-full bg-[#0A0A0A] border border-white/5 rounded-xl px-4 py-3 text-xs text-white font-bold focus:outline-none appearance-none"
+                                className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-xs text-white font-bold focus:outline-none appearance-none"
                             >
                                 <option value="SHOP_SPECIAL_FOR_YOU">Shop Special Banner</option>
                                 <option value="PRODUCT_LIST_TOP">All Products Top (Rectangular)</option>

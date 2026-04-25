@@ -19,7 +19,7 @@ import { SpecialAdsScroller } from '@/components/Shop/SpecialAdsScroller';
 import { SEOListingFooter } from '@/components/Shop/SEOListingFooter';
 import { Breadcrumbs } from '@/components/Shop/Breadcrumbs';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
-import { ShopIcon } from '@/components/ui/ShopIcon';
+import { ShopIcon } from '@tamuu/ui';
 import Link from 'next/link';
 
 export default function HomeContent() {

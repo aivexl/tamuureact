@@ -12,7 +12,7 @@ import {
 
 export type ShopIconName = keyof typeof Icons | string;
 
-interface ShopIconProps {
+export interface ShopIconProps {
     name: ShopIconName;
     size?: number;
     className?: string;

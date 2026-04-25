@@ -10,7 +10,7 @@ import { useSEO } from '../../hooks/useSEO';
 import { shop } from '../../lib/api';
 import { Navbar } from '../../components/Layout/Navbar';
 import { INDONESIA_REGIONS } from '../../constants/regions';
-import { ShopIcon } from '../../components/ui/ShopIcon';
+import { ShopIcon } from '@tamuu/ui';
 
 export const VendorOnboardingPage: React.FC = () => {
     const navigate = useNavigate();

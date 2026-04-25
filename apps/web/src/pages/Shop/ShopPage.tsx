@@ -39,7 +39,7 @@ import { formatCurrency, formatAbbreviatedNumber, parseUTCDate, cn } from '../..
 import { useQuery } from '@tanstack/react-query';
 import { blog, shop } from '../../lib/api';
 import { Breadcrumbs } from '../../components/Shop/Breadcrumbs';
-import { ShopIcon } from '../../components/ui/ShopIcon';
+import { ShopIcon } from '@tamuu/ui';
 
 const ALL_CATEGORY = { id: 'all', name: 'All', icon: 'LayoutGrid', slug: 'all' };
 import { SEOListingFooter } from '../../components/Shop/SEOListingFooter';
