@@ -30,7 +30,8 @@ import {
     useSpecialProducts,
     useFeaturedProducts,
     useRandomProducts,
-    useTrackAdClick
+    useTrackAdClick,
+    useShopCategories
 } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useSEO } from '../../hooks/useSEO';
@@ -38,6 +39,9 @@ import { formatCurrency, formatAbbreviatedNumber, parseUTCDate, cn } from '../..
 import { useQuery } from '@tanstack/react-query';
 import { blog, shop } from '../../lib/api';
 import { Breadcrumbs } from '../../components/Shop/Breadcrumbs';
+import { ShopIcon } from '../../components/ui/ShopIcon';
+
+const ALL_CATEGORY = { id: 'all', name: 'All', icon: 'LayoutGrid', slug: 'all' };
 import { SEOListingFooter } from '../../components/Shop/SEOListingFooter';
 import { assembleSEOTemplate } from '../../lib/seo-permutation';
 import { MultiCarousel } from '../../components/ui/MultiCarousel';
@@ -232,15 +236,16 @@ export const ShopPage: React.FC = () => {
         description: seoContent.description
     });
 
-    const categoryConfig = useMemo(() => [
-        { name: 'All', icon: LayoutGrid, slug: 'all' },
-        { name: 'MUA', icon: Sparkles, slug: 'mua' },
-        { name: 'Wedding Organizer', icon: Heart, slug: 'wedding-organizer' },
-        { name: 'Catering', icon: Utensils, slug: 'catering' },
-        { name: 'Fotografi', icon: Camera, slug: 'fotografi' },
-        { name: 'Dekorasi', icon: Palette, slug: 'dekorasi' },
-        { name: 'Venue', icon: Building2, slug: 'venue' },
-    ], []);
+    const { data: remoteCategories = [] } = useShopCategories();
+    
+    const categoryConfig = useMemo(() => {
+        const dynamicCats = remoteCategories.map((cat: any) => ({
+            name: cat.name,
+            icon: cat.icon,
+            slug: cat.slug
+        }));
+        return [ALL_CATEGORY, ...dynamicCats];
+    }, [remoteCategories]);
 
     const handleCategoryClick = useCallback((cat: any) => {
         const citySlug = selectedCity === 'All' ? '' : `/${selectedCity.toLowerCase().replace(/\s+/g, '-')}`;
@@ -323,7 +328,6 @@ export const ShopPage: React.FC = () => {
                                 className="flex overflow-x-auto gap-3 pb-2 no-scrollbar scroll-smooth px-4 -mx-4 snap-x"
                             >
                                 {categoryConfig.map((cat) => {
-                                    const Icon = cat.icon;
                                     const isActive = selectedCategory === cat.name;
                                     return (
                                         <Button
@@ -333,7 +337,11 @@ export const ShopPage: React.FC = () => {
                                             onClick={() => handleCategoryClick(cat)}
                                             className="snap-start"
                                         >
-                                            <Icon className={cn("w-3.5 h-3.5", isActive ? "text-[#FFBF00]" : "text-slate-300")} />
+                                            <ShopIcon 
+                                                name={cat.icon} 
+                                                size={14} 
+                                                className={isActive ? "text-[#FFBF00]" : "text-slate-300"} 
+                                            />
                                             {cat.name}
                                         </Button>
                                     );

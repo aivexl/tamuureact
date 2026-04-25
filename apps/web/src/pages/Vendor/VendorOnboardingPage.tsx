@@ -4,41 +4,20 @@ import { m, AnimatePresence } from 'framer-motion';
 import { Store, Link as LinkIcon, Briefcase, ArrowRight, Check, AlertCircle, X, ChevronDown, MapPin, Search as SearchIcon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useStore } from '../../store/useStore';
-import { useOnboardVendor, useVendorProfile } from '../../hooks/queries/useShop';
+import { useOnboardVendor, useVendorProfile, useShopCategories } from '../../hooks/queries/useShop';
 import { PremiumLoader } from '../../components/ui/PremiumLoader';
 import { useSEO } from '../../hooks/useSEO';
 import { shop } from '../../lib/api';
 import { Navbar } from '../../components/Layout/Navbar';
 import { INDONESIA_REGIONS } from '../../constants/regions';
-
-const SHOP_CATEGORIES = [
-    'Makeup Artist',
-    'Wedding Organizer',
-    'Dekorasi',
-    'Fotografi',
-    'Katering',
-    'Venue',
-    'Entertainment',
-    'Lainnya'
-];
-
-// Map text labels to D1 database UUIDs to satisfy FOREIGN KEY constraint on shop_category
-const CATEGORY_UUID_MAP: Record<string, string> = {
-    'Makeup Artist': 'cat-001',
-    'Wedding Organizer': 'cat-002',
-    'Katering': 'cat-003',
-    'Fotografi': 'cat-004',
-    'Dekorasi': 'cat-005',
-    'Venue': 'cat-006',
-    'Entertainment': 'cat-001', // Fallbacks if not seeded
-    'Lainnya': 'cat-001'
-};
+import { ShopIcon } from '../../components/ui/ShopIcon';
 
 export const VendorOnboardingPage: React.FC = () => {
     const navigate = useNavigate();
     const { user } = useStore();
     const { data: profile } = useVendorProfile(user?.id);
     const { mutateAsync: onboardVendor, isPending } = useOnboardVendor();
+    const { data: categories = [] } = useShopCategories();
 
     // Auto-redirect if already a vendor
     React.useEffect(() => {
@@ -143,23 +122,17 @@ export const VendorOnboardingPage: React.FC = () => {
         try {
             setError(null);
 
-            // Map the selected string category to its database ID
-            const mappedCategoryId = CATEGORY_UUID_MAP[categoryId] || 'cat-001';
-
-            const result = await onboardVendor({
+            await onboardVendor({
                 user_id: user.id,
                 nama_toko: namaToko,
                 slug: slug,
-                category_id: mappedCategoryId, // Use mapped ID instead of raw string
+                category_id: categoryId, // Now correctly contains the UUID
                 kota: kota,
                 deskripsi: `Selamat datang di ${namaToko}` // default initial description
             });
 
-            // Use API-confirmed slug for guaranteed consistency with backend
-            const confirmedSlug = result?.slug || slug;
-
             // Hard navigate to force a full page reload
-            window.location.href = `/vendor/${confirmedSlug}/dashboard`;
+            window.location.href = `/vendor/${slug}/dashboard`;
         } catch (err: any) {
             setError(err.message || 'Gagal membuat toko. Silakan coba slug atau nama lain.');
         }
@@ -253,13 +226,16 @@ export const VendorOnboardingPage: React.FC = () => {
                                 <p className="text-slate-500 text-base sm:text-lg">Pilih industri yang paling sesuai dengan layanan Anda.</p>
                             </div>
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                                {SHOP_CATEGORIES.map(category => (
+                                {categories.map(cat => (
                                     <button
-                                        key={category}
-                                        onClick={() => setCategoryId(category)}
-                                        className={`p-4 sm:p-5 rounded-[1.25rem] sm:rounded-[1.5rem] border-2 transition-all duration-300 ${categoryId === category ? 'border-indigo-500 bg-indigo-50 shadow-lg scale-[1.03] ring-4 ring-indigo-500/10' : 'border-transparent bg-white shadow-sm hover:border-slate-200'}`}
+                                        key={cat.id}
+                                        onClick={() => setCategoryId(cat.id)}
+                                        className={`p-5 rounded-[1.5rem] border-2 transition-all duration-300 flex flex-col items-center gap-3 ${categoryId === cat.id ? 'border-indigo-500 bg-indigo-50 shadow-lg scale-[1.03] ring-4 ring-indigo-500/10' : 'border-transparent bg-white shadow-sm hover:border-slate-200'}`}
                                     >
-                                        <h3 className={`font-semibold text-xs sm:text-sm ${categoryId === category ? 'text-indigo-600' : 'text-slate-600'}`}>{category}</h3>
+                                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${categoryId === cat.id ? 'bg-indigo-500 text-white' : 'bg-slate-50 text-slate-400'}`}>
+                                            <ShopIcon name={cat.icon} size={24} />
+                                        </div>
+                                        <h3 className={`font-bold text-[10px] uppercase tracking-widest ${categoryId === cat.id ? 'text-indigo-600' : 'text-slate-600'}`}>{cat.name}</h3>
                                     </button>
                                 ))}
                             </div>
