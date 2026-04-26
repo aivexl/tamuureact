@@ -64,12 +64,6 @@ export const ProductCard = ({ product, isSmall = false, onAdClick, priority = fa
                     priority={priority}
                     className={`transition-transform duration-700 ${imageUrl.includes('logo') ? 'object-contain p-4 md:p-8 opacity-30' : 'object-cover group-hover:scale-105'}`}
                 />
-                
-                {product.isAd && (
-                    <div className={`${isSmall ? 'top-2 left-2 px-1.5 py-0.5 text-[7px]' : 'top-4 left-4 px-3 py-1 text-[10px]'} absolute bg-[#FFBF00] text-[#0A1128] font-black uppercase tracking-widest rounded-full z-10 shadow-md`}>
-                        Promoted
-                    </div>
-                )}
             </div>
             
             <div className={`${isSmall ? 'p-2 md:p-3' : 'p-3 md:p-4'} flex flex-col flex-1 min-w-0 overflow-hidden bg-white`}>
@@ -102,7 +96,7 @@ export const ProductCard = ({ product, isSmall = false, onAdClick, priority = fa
                         </p>
                         
                         <p className={`${isSmall ? 'text-[6px] md:text-[7px]' : 'text-[7px] md:text-[8px]'} font-black text-[#FFBF00] uppercase tracking-widest mt-0.5 truncate`}>
-                            {product.isAd ? 'Sponsored' : (product.custom_store_name || product.nama_toko || '')}
+                            {product.custom_store_name || product.nama_toko || ''}
                         </p>
                     </div>
 

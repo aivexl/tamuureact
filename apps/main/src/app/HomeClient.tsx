@@ -49,13 +49,12 @@ export default function HomeContent() {
             setIsLoading(true);
             try {
                 // Fetch comprehensive home data
-                const [slidesRes, productsRes, featuredRes, blogRes, catRes, adsSpecialRes, adsBannerRes, specialProductsRes] = await Promise.all([
+                const [slidesRes, productsRes, featuredRes, blogRes, catRes, adsBannerRes, specialProductsRes] = await Promise.all([
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/carousel`).then(r => r.json()),
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/products/discovery?limit=50`).then(r => r.json()),
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/products/featured`).then(r => r.json()),
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog?limit=6`).then(r => r.json()),
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/categories`).then(r => r.json()),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/ads?position=SPECIAL_FOR_YOU_HOME`).then(r => r.json()),
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/ads?position=SHOP_SPECIAL_FOR_YOU`).then(r => r.json()),
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/products/special`).then(r => r.json())
                 ]);
@@ -66,7 +65,7 @@ export default function HomeContent() {
                     featured: featuredRes?.products || [],
                     blog: blogRes || [],
                     categories: catRes?.categories || [],
-                    specialAds: adsSpecialRes?.ads || [],
+                    specialAds: [],
                     specialBanner: adsBannerRes?.ads?.[0] || null,
                     specialProducts: specialProductsRes?.products || specialProductsRes || []
                 });
