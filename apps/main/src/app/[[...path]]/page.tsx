@@ -44,8 +44,8 @@ export default async function UniversalRouter({ params }: Props) {
     
     console.log(`[Universal Router] Routing path: ${pathname}`);
 
-    // 1. HOMEPAGE SPECIAL CASE
-    if (pathname === '/') {
+    // 1. HOMEPAGE & DISCOVERY SPECIAL CASE (Exact Paths Only)
+    if (pathname === '/' || pathname === '/shop' || pathname === '/product') {
         await enforceDomain('public');
         return (
             <Suspense fallback={<PremiumLoader variant="full" showLabel label="Loading Tamuu..." />}>

@@ -45,8 +45,6 @@ export const VITE_PUBLIC_PATHS = [
     '/preview',
     '/v/',
     '/c/',
-    '/shop',
-    '/product',
     '/templates',
     '/preview-invitation'
 ];
@@ -55,6 +53,8 @@ export const VITE_PUBLIC_PATHS = [
 // These are SEO-rich pages served natively by Next.js
 export const NEXTJS_PUBLIC_PATHS = [
     '/',
+    '/shop',
+    '/product',
     '/undangan-digital',
     '/blog',
     '/support',

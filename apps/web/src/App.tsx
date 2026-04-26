@@ -55,7 +55,6 @@ const AdminChatMonitoringPage = lazy(() => import('./pages/Admin/AdminChatMonito
 // Shop & Vendor Pages
 const VendorPortalPage = lazy(() => import('./pages/Vendor/VendorPortalPage').then(m => ({ default: m.VendorPortalPage })));
 const VendorOnboardingPage = lazy(() => import('./pages/Vendor/VendorOnboardingPage').then(m => ({ default: m.VendorOnboardingPage })));
-const ShopPage = lazy(() => import('./pages/Shop/ShopPage'));
 const StorefrontPage = lazy(() => import('./pages/Shop/StorefrontPage'));
 const ProductDetailPage = lazy(() => import('./pages/Shop/ProductDetailPage'));
 const GuestWelcomeDisplay = lazy(() => import('./pages/GuestWelcomeDisplay').then(m => ({ default: m.GuestWelcomeDisplay })));
