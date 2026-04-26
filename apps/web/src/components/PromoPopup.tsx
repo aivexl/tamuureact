@@ -11,9 +11,12 @@ export const PromoPopup: React.FC = () => {
     const location = useLocation();
 
     useEffect(() => {
-        // Only show once per session
+        const queryParams = new URLSearchParams(window.location.search);
+        const isDebug = queryParams.get('debug_popup') === 'true';
+        
+        // Only show once per session (unless debug mode is on)
         const hasShown = sessionStorage.getItem('tamuu_promo_shown');
-        if (hasShown) return;
+        if (hasShown && !isDebug) return;
 
         const fetchPopups = async () => {
             try {
@@ -22,7 +25,7 @@ export const PromoPopup: React.FC = () => {
                 // CRITICAL: Exclude Invitation & Preview Pages (Ads not allowed here)
                 const isInvitation = path.startsWith('/v/') || path.startsWith('/preview/') || (path.split('/').length <= 3 && path !== '/' && !['/shop', '/blog', '/admin', '/dashboard', '/profile', '/billing', '/onboarding', '/upgrade', '/guests', '/wishes', '/editor', '/vendor', '/terms', '/privacy', '/about'].some(p => path.startsWith(p)));
                 
-                if (isInvitation) return;
+                if (isInvitation && !isDebug) return;
 
                 // Determine placement based on path
                 let placement = 'all';
@@ -30,12 +33,13 @@ export const PromoPopup: React.FC = () => {
                 else if (path.startsWith('/shop')) placement = 'shop';
                 else if (path.startsWith('/admin')) placement = 'admin';
                 else if (path.startsWith('/dashboard')) placement = 'dashboard';
+                else if (path.startsWith('/v/')) placement = 'user';
 
                 const data = await shop.getPopups(placement);
                 if (data && data.length > 0) {
                     setPopups(data);
-                    // Add a small delay for better impact
-                    setTimeout(() => setIsVisible(true), 1500);
+                    // Reduced delay for better UX
+                    setTimeout(() => setIsVisible(true), 500);
                 }
             } catch (error) {
                 console.error('Failed to fetch promo popups', error);
@@ -43,7 +47,7 @@ export const PromoPopup: React.FC = () => {
         };
 
         fetchPopups();
-    }, [location.pathname]);
+    }, [location.pathname, window.location.search]);
 
     const handleClose = () => {
         setIsVisible(false);
