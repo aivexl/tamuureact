@@ -2682,6 +2682,24 @@ export default {
                     }
                 }
 
+                if (path === '/api/admin/shop/popups/reorder' && method === 'POST') {
+                    try {
+                        const { popups } = await request.json();
+                        if (!Array.isArray(popups)) {
+                            return json({ error: 'Array of popups required' }, { headers: corsHeaders, status: 400 });
+                        }
+
+                        const statements = popups.map(p => 
+                            env.DB.prepare('UPDATE shop_promo_popups SET order_index = ? WHERE id = ?').bind(p.order_index, p.id)
+                        );
+                        
+                        await env.DB.batch(statements);
+                        return json({ success: true }, corsHeaders);
+                    } catch (error) {
+                        return json({ error: 'Failed to reorder popups', details: error.message }, { headers: corsHeaders, status: 500 });
+                    }
+                }
+
                 if (path.startsWith('/api/admin/shop/popups/') && method === 'DELETE') {
                     const id = path.split('/').pop();
                     await env.DB.prepare('DELETE FROM shop_promo_popups WHERE id = ?').bind(id).run();

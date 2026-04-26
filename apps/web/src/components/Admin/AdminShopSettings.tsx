@@ -189,6 +189,33 @@ export const AdminShopSettings: React.FC = () => {
         }
     };
 
+    const handleMovePopup = async (index: number, direction: 'up' | 'down') => {
+        const newPopups = [...popups];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        
+        if (targetIndex < 0 || targetIndex >= newPopups.length) return;
+
+        // Swap
+        [newPopups[index], newPopups[targetIndex]] = [newPopups[targetIndex], newPopups[index]];
+
+        // Update order indices
+        const reorderPayload = newPopups.map((p, idx) => ({
+            id: p.id,
+            order_index: idx
+        }));
+
+        // Optimistic UI update
+        setPopups(newPopups.map((p, idx) => ({ ...p, order_index: idx })));
+
+        try {
+            await shop.adminReorderPopups(token || '', reorderPayload);
+            toast.success('Urutan popup diperbarui');
+        } catch (error) {
+            toast.error('Gagal memperbarui urutan');
+            fetchPopups(); // Rollback
+        }
+    };
+
     // Ads State
     const [ads, setAds] = useState<any[]>([]);
     const [isFetchingAds, setIsFetchingAds] = useState(false);
@@ -586,17 +613,22 @@ export const AdminShopSettings: React.FC = () => {
                                         </div>
                                         <div>
                                             <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Penempatan (Placements)</label>
-                                            <input 
-                                                type="text" 
+                                            <select 
                                                 value={newPopup.placements}
                                                 onChange={e => setNewPopup({ ...newPopup, placements: e.target.value })}
-                                                className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-white text-xs"
-                                                placeholder="all, dashboard, homepage, shop, admin, user"
-                                            />
-                                            <p className="text-[8px] text-slate-600 font-bold uppercase tracking-widest mt-1.5 italic">Pisahkan dengan koma. Gunakan 'all' untuk semua halaman.</p>
+                                                className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-white text-xs appearance-none"
+                                            >
+                                                <option value="all">Seluruh Halaman (All)</option>
+                                                <option value="homepage">Beranda Utama (Homepage)</option>
+                                                <option value="shop">Direktori Belanja (Shop)</option>
+                                                <option value="dashboard">Dashboard Pengguna</option>
+                                                <option value="admin">Panel Admin</option>
+                                                <option value="user">Halaman Undangan Digital</option>
+                                            </select>
+                                            <p className="text-[8px] text-slate-600 font-bold uppercase tracking-widest mt-1.5 italic">Pilih area di mana popup ini akan ditampilkan.</p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
-                                            <div>
+                                            <div className="hidden">
                                                 <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Urutan</label>
                                                 <input 
                                                     type="number" 
@@ -605,7 +637,7 @@ export const AdminShopSettings: React.FC = () => {
                                                     className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-white text-xs"
                                                 />
                                             </div>
-                                            <div>
+                                            <div className="col-span-2">
                                                 <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Status</label>
                                                 <select 
                                                     value={newPopup.is_active}
@@ -677,6 +709,24 @@ export const AdminShopSettings: React.FC = () => {
                                                     </div>
                                                 </div>
                                                 <div className="flex flex-col gap-2 justify-center">
+                                                    <div className="flex flex-col gap-1">
+                                                        <button 
+                                                            onClick={() => handleMovePopup(idx, 'up')}
+                                                            disabled={idx === 0}
+                                                            className={`p-1 rounded bg-white/5 hover:bg-white/10 transition-colors ${idx === 0 ? 'opacity-20 cursor-not-allowed' : 'text-slate-400 hover:text-white'}`}
+                                                            title="Pindahkan ke atas"
+                                                        >
+                                                            <ArrowUp className="w-3 h-3" />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleMovePopup(idx, 'down')}
+                                                            disabled={idx === popups.length - 1}
+                                                            className={`p-1 rounded bg-white/5 hover:bg-white/10 transition-colors ${idx === popups.length - 1 ? 'opacity-20 cursor-not-allowed' : 'text-slate-400 hover:text-white'}`}
+                                                            title="Pindahkan ke bawah"
+                                                        >
+                                                            <ArrowDown className="w-3 h-3" />
+                                                        </button>
+                                                    </div>
                                                     <button 
                                                         onClick={() => {
                                                             setEditingPopupId(popup.id);

@@ -1343,6 +1343,18 @@ export const shop = {
         return res.json();
     },
 
+    async adminReorderPopups(token: string, popups: { id: string, order_index: number }[]) {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/popups/reorder`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ popups })
+        });
+        return res.json();
+    },
+
     async adminGetCarousel(token: string) {
         const res = await safeFetch(`${API_BASE}/api/admin/shop/carousel`, {
             headers: { 'Authorization': `Bearer ${token}` }
