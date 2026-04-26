@@ -4,7 +4,7 @@ import {
     Search, Store, UserCheck, ShieldOff, Image as ImageIcon, 
     Plus, Trash2, Link as LinkIcon, UploadCloud, CheckCircle2, 
     AlertTriangle, ShieldAlert, Ban, Power, Trash, Coins, 
-    Wallet, PlusCircle, MinusCircle, DollarSign
+    Wallet, PlusCircle, MinusCircle, DollarSign, Save
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
@@ -143,7 +143,8 @@ export const AdminStoreManagement: React.FC = () => {
     };
 
     const handleUpdateBalance = () => {
-        const amount = parseInt(balanceAmount);
+        // Strip dots before parsing
+        const amount = parseInt(balanceAmount.replace(/\./g, ''));
         if (isNaN(amount) || amount < 0) {
             return toast.error('Nominal tidak valid');
         }
@@ -160,6 +161,17 @@ export const AdminStoreManagement: React.FC = () => {
                 setSelectedVendorForBalance(null);
             }
         });
+    };
+
+    const handleBalanceInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const val = e.target.value.replace(/\D/g, ''); // Only digits
+        if (!val) {
+            setBalanceAmount('');
+            return;
+        }
+        // Format with dots
+        const formatted = Number(val).toLocaleString('id-ID');
+        setBalanceAmount(formatted);
     };
 
     const handleDeleteSlide = (id: string) => {
@@ -548,10 +560,10 @@ export const AdminStoreManagement: React.FC = () => {
                             <div className="relative group">
                                 <div className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-teal-500/50 tracking-tighter italic text-lg">Rp</div>
                                 <input 
-                                    type="number"
+                                    type="text"
                                     placeholder="0"
                                     value={balanceAmount}
-                                    onChange={(e) => setBalanceAmount(e.target.value)}
+                                    onChange={handleBalanceInputChange}
                                     className="w-full bg-black/40 border border-white/5 group-hover:border-white/10 focus:border-teal-500/50 rounded-2xl pl-14 pr-6 py-5 text-xl font-black text-white focus:ring-0 placeholder:text-white/5 transition-all outline-none"
                                 />
                             </div>
