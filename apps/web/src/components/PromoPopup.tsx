@@ -17,15 +17,19 @@ export const PromoPopup: React.FC = () => {
 
         const fetchPopups = async () => {
             try {
-                // Determine placement based on path
-                let placement = 'all';
                 const path = location.pathname;
                 
+                // CRITICAL: Exclude Invitation & Preview Pages (Ads not allowed here)
+                const isInvitation = path.startsWith('/v/') || path.startsWith('/preview/') || (path.split('/').length <= 3 && path !== '/' && !['/shop', '/blog', '/admin', '/dashboard', '/profile', '/billing', '/onboarding', '/upgrade', '/guests', '/wishes', '/editor', '/vendor', '/terms', '/privacy', '/about'].some(p => path.startsWith(p)));
+                
+                if (isInvitation) return;
+
+                // Determine placement based on path
+                let placement = 'all';
                 if (path === '/') placement = 'homepage';
                 else if (path.startsWith('/shop')) placement = 'shop';
                 else if (path.startsWith('/admin')) placement = 'admin';
                 else if (path.startsWith('/dashboard')) placement = 'dashboard';
-                else if (path.startsWith('/v/')) placement = 'user';
 
                 const data = await shop.getPopups(placement);
                 if (data && data.length > 0) {

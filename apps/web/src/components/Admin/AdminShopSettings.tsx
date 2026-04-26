@@ -618,14 +618,13 @@ export const AdminShopSettings: React.FC = () => {
                                                 onChange={e => setNewPopup({ ...newPopup, placements: e.target.value })}
                                                 className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-white text-xs appearance-none"
                                             >
-                                                <option value="all">Seluruh Halaman (All)</option>
+                                                <option value="all">Seluruh Halaman Utama (Exclude Undangan)</option>
                                                 <option value="homepage">Beranda Utama (Homepage)</option>
                                                 <option value="shop">Direktori Belanja (Shop)</option>
                                                 <option value="dashboard">Dashboard Pengguna</option>
                                                 <option value="admin">Panel Admin</option>
-                                                <option value="user">Halaman Undangan Digital</option>
                                             </select>
-                                            <p className="text-[8px] text-slate-600 font-bold uppercase tracking-widest mt-1.5 italic">Pilih area di mana popup ini akan ditampilkan.</p>
+                                            <p className="text-[8px] text-slate-600 font-bold uppercase tracking-widest mt-1.5 italic">Pilih area di mana popup ini akan ditampilkan. Halaman undangan user otomatis dikecualikan.</p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="hidden">
