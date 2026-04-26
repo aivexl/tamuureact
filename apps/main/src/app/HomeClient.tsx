@@ -221,8 +221,62 @@ export default function HomeContent() {
                     />
                 </section>
 
-                {/* Blog Section */}
-                <BlogSection />
+                {/* RESTORED BLOG SECTION (EXACT SIZE & SCROLLER) */}
+                {data.blog.length > 0 && (
+                    <section className="mt-20 pt-20 border-t border-[#F1F5F9]">
+                        <div className="flex items-center justify-between mb-8 px-4">
+                            <div className="flex items-center gap-3">
+                                <div className="w-1.5 h-6 bg-[#FFBF00] rounded-full" />
+                                <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight italic">Tamuu Blog</h2>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => handleScroll('blog-scroll', -300)} className="p-2 rounded-full bg-slate-50 border border-slate-100 hover:bg-[#FFBF00] transition-all"><ChevronLeft className="w-4 h-4" /></button>
+                                <button onClick={() => handleScroll('blog-scroll', 300)} className="p-2 rounded-full bg-slate-50 border border-slate-100 hover:bg-[#FFBF00] transition-all"><ChevronRight className="w-4 h-4" /></button>
+                            </div>
+                        </div>
+                        <div 
+                            id="blog-scroll"
+                            className="flex gap-6 overflow-x-auto no-scrollbar pb-6 px-4 snap-x scroll-smooth"
+                        >
+                            {data.blog.map((post: any) => {
+                                const rawUrl = post.featured_image;
+                                const isUnsplash = rawUrl?.includes('unsplash.com');
+                                const imageUrl = (isUnsplash || !rawUrl) ? '/images/logo-tamuu-vfinal-v1.webp' : rawUrl;
+                                const isLogo = imageUrl.includes('logo');
+
+                                return (
+                                    <Link key={post.id} href={`/blog/${post.slug}`} prefetch={false} className="group cursor-pointer min-w-[280px] md:min-w-[320px] snap-start">
+                                        <div className="aspect-[4/3] rounded-[1.5rem] md:rounded-[2rem] overflow-hidden mb-4 bg-slate-50 border border-[#F1F5F9] relative shadow-sm">
+                                            <img 
+                                                src={imageUrl} 
+                                                className={`w-full h-full transition-transform duration-700 ${isLogo ? 'object-contain p-12 opacity-20' : 'object-cover group-hover:scale-105'}`} 
+                                                alt={post.title} 
+                                            />
+                                            <div className="absolute top-4 left-4">
+                                                <div className="bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest text-[#0A1128] border border-white/20">
+                                                    Inspirasi
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="px-2">
+                                            <h3 className="text-sm md:text-base font-black leading-tight uppercase tracking-tight text-[#0A1128] group-hover:text-[#FFBF00] transition-colors line-clamp-2">{post.title}</h3>
+                                            <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">Read Article</p>
+                                        </div>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                        
+                        <div className="mt-8 text-center">
+                            <Link 
+                                href="/blog"
+                                className="inline-flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#0A1128] hover:text-[#FFBF00] transition-all"
+                            >
+                                Lihat Semua Artikel <ArrowRight className="w-4 h-4" />
+                            </Link>
+                        </div>
+                    </section>
+                )}
 
                 <SEOListingFooter />
             </Container>
