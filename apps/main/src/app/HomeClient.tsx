@@ -15,10 +15,12 @@ import {
 import { Container } from '@/components/ui/Container';
 import { MultiCarousel } from '@/components/ui/MultiCarousel';
 import { ProductCard } from '@/components/Shop/ProductCard';
+import { ProductGrid } from '@/components/Shop/ProductGrid';
 import { SpecialAdsScroller } from '@/components/Shop/SpecialAdsScroller';
 import { SEOListingFooter } from '@/components/Shop/SEOListingFooter';
 import { Breadcrumbs } from '@/components/Shop/Breadcrumbs';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
+import BlogSection from '@/components/undangan-digital/BlogSection';
 import { ShopIcon } from '@tamuu/ui';
 import Link from 'next/link';
 
@@ -32,7 +34,10 @@ export default function HomeContent() {
         products: [], 
         featured: [], 
         blog: [],
-        categories: []
+        categories: [],
+        specialAds: [],
+        specialBanner: null,
+        specialProducts: []
     });
     const [isLoading, setIsLoading] = useState(true);
 
@@ -43,13 +48,16 @@ export default function HomeContent() {
         const fetchAll = async () => {
             setIsLoading(true);
             try {
-                // Fetch basic data from API
-                const [slidesRes, productsRes, featuredRes, blogRes, catRes] = await Promise.all([
+                // Fetch comprehensive home data
+                const [slidesRes, productsRes, featuredRes, blogRes, catRes, adsSpecialRes, adsBannerRes, specialProductsRes] = await Promise.all([
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/carousel`).then(r => r.json()),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/products/discovery?limit=12`).then(r => r.json()),
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/products/discovery?limit=50`).then(r => r.json()),
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/products/featured`).then(r => r.json()),
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog?limit=4`).then(r => r.json()),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/categories`).then(r => r.json())
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/categories`).then(r => r.json()),
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/ads?position=SPECIAL_FOR_YOU_HOME`).then(r => r.json()),
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/ads?position=SHOP_SPECIAL_FOR_YOU`).then(r => r.json()),
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/products/special`).then(r => r.json())
                 ]);
 
                 setData({
@@ -57,7 +65,10 @@ export default function HomeContent() {
                     products: productsRes?.products || [],
                     featured: featuredRes?.products || [],
                     blog: blogRes || [],
-                    categories: catRes?.categories || []
+                    categories: catRes?.categories || [],
+                    specialAds: adsSpecialRes?.ads || [],
+                    specialBanner: adsBannerRes?.ads?.[0] || null,
+                    specialProducts: specialProductsRes?.products || specialProductsRes || []
                 });
             } catch (err) {
                 console.error('Failed to fetch home data:', err);
@@ -77,6 +88,13 @@ export default function HomeContent() {
         }));
         return [ALL_CAT, ...dynamicCats];
     }, [data.categories]);
+
+    const filteredProducts = useMemo(() => {
+        return data.products.filter((p: any) => {
+            const matchesCategory = currentCategory === 'all' || p.kategori_produk?.toLowerCase().includes(currentCategory);
+            return matchesCategory;
+        });
+    }, [data.products, currentCategory]);
 
     const handleCategoryClick = useCallback((slug: string) => {
         const params = new URLSearchParams(searchParams.toString());
@@ -174,7 +192,11 @@ export default function HomeContent() {
 
                 {/* Ads Section */}
                 <section className="mb-20">
-                    <SpecialAdsScroller />
+                    <SpecialAdsScroller 
+                        biddingAds={data.specialAds}
+                        specialBanner={data.specialBanner}
+                        specialProducts={data.specialProducts}
+                    />
                 </section>
 
                 {/* Featured Products */}
@@ -192,17 +214,16 @@ export default function HomeContent() {
                     </div>
                 </section>
 
-                {/* All Products Grid */}
+                {/* All Products Grid with Load More */}
                 <section className="mb-32">
-                    <div className="flex items-center justify-between mb-8 px-4">
-                        <h2 className="text-2xl font-black text-[#0A1128] uppercase tracking-tight italic">All Collections</h2>
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8">
-                        {data.products.map((product: any) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                    </div>
+                    <ProductGrid 
+                        products={filteredProducts}
+                        title="All Collections"
+                    />
                 </section>
+
+                {/* Blog Section */}
+                <BlogSection />
 
                 <SEOListingFooter />
             </Container>
