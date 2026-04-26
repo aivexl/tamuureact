@@ -77,8 +77,28 @@ export const TermsPage: React.FC = () => {
                                     Terminologi <strong>"Selamanya"</strong> atau <strong>"Lifetime"</strong> pada paket ELITE merujuk pada durasi akses selama platform <strong>tamuu.id</strong> masih beroperasi secara komersial. Tamuu tidak memberikan jaminan durasi spesifik jika di masa depan terjadi penghentian operasional platform karena alasan hukum, teknologi, atau bisnis.
                                 </p>
                             </div>
-                            <p className="text-sm font-bold text-slate-900">
-                                Kebijakan Pengembalian (Refund): Seluruh transaksi yang telah berhasil dilakukan bersifat final. Tamuu tidak menyediakan pengembalian dana (refund) untuk alasan apapun karena alokasi sumber daya infrastruktur dilakukan secara instan.
+                        </div>
+                    </section>
+
+                    <section>
+                        <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-3 mb-6 uppercase tracking-tight">
+                            <RefreshCcw className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500" />
+                            6. Refund & Cancellation Policy
+                        </h2>
+                        <div className="space-y-4">
+                            <p className="font-bold text-slate-900">
+                                All transactions conducted on the Tamuu platform are final.
+                            </p>
+                            <p>
+                                Tamuu does not provide refunds, credits, or exchanges for any purchases, including but not limited to:
+                            </p>
+                            <ul className="list-disc pl-6 space-y-2">
+                                <li><strong>Subscription Tiers:</strong> Basic, Pro, Ultimate, and Elite plan purchases or upgrades.</li>
+                                <li><strong>Ad Balance:</strong> All top-ups and credits added to the vendor's advertisement balance.</li>
+                                <li><strong>Digital Assets:</strong> Any premium themes or features unlocked through the platform.</li>
+                            </ul>
+                            <p>
+                                This "No Refund" policy is strictly enforced because digital resources, server infrastructure, and license allocations are provisioned instantly upon payment validation.
                             </p>
                         </div>
                     </section>
@@ -86,7 +106,7 @@ export const TermsPage: React.FC = () => {
                     <section>
                         <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-3 mb-6 uppercase tracking-tight">
                             <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500" />
-                            6. Terms of Termination
+                            7. Terms of Termination
                         </h2>
                         <p>
                             Tamuu, at its sole discretion, may suspend or terminate this Agreement with immediate effect if you commit any material breach of your obligations under this Agreement or cease to carry on business.
@@ -96,7 +116,7 @@ export const TermsPage: React.FC = () => {
                     <section>
                         <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-3 mb-6 uppercase tracking-tight">
                             <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500" />
-                            7. Governmental Independence & Neutrality
+                            8. Governmental Independence & Neutrality
                         </h2>
                         <p>
                             Tamuu operates as a strictly independent private entity. We do not participate in, collaborate with, or engage in any projects, procurement initiatives, or partnerships lead by the government of the Republic of Indonesia. Our services and platform are provided independently of any governmental affiliations or governmental commercial activities.
