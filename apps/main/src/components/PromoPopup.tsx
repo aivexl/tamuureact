@@ -126,26 +126,38 @@ export const PromoPopup: React.FC = () => {
                                     exit={{ opacity: 0, x: -20 }}
                                     className="w-full h-full"
                                 >
-                                    {popups[currentIndex].link_url ? (
-                                        <a 
-                                            href={popups[currentIndex].link_url} 
-                                            target={popups[currentIndex].link_url.startsWith('http') ? '_blank' : '_self'}
-                                            rel="noopener noreferrer"
-                                            className="block w-full h-full"
-                                        >
-                                            <img 
-                                                src={popups[currentIndex].image_url} 
-                                                alt="Promo" 
-                                                className="w-full h-full object-cover rounded-[2rem]"
-                                            />
-                                        </a>
-                                    ) : (
-                                        <img 
-                                            src={popups[currentIndex].image_url} 
-                                            alt="Promo" 
-                                            className="w-full h-full object-cover rounded-[2rem]"
-                                        />
-                                    )}
+                                    {(() => {
+                                        const rawUrl = popups[currentIndex].image_url;
+                                        const isUnsplash = rawUrl?.includes('unsplash.com');
+                                        const imageUrl = (isUnsplash || !rawUrl || rawUrl === 'https://tamuu.id/tamuu-logo.png' || rawUrl === 'https://api.tamuu.id/assets/tamuu-logo-header.png') 
+                                            ? '/images/logo-tamuu-vfinal-v1.webp' 
+                                            : rawUrl;
+                                        const isLogo = imageUrl.includes('logo');
+
+                                        const imgElement = (
+                                            <div className={`w-full h-full ${isLogo ? 'bg-slate-900 flex items-center justify-center p-12 md:p-20' : ''}`}>
+                                                <img 
+                                                    src={imageUrl} 
+                                                    alt="Promo" 
+                                                    className={`w-full h-full rounded-[2rem] ${isLogo ? 'object-contain opacity-20 grayscale brightness-200' : 'object-cover'}`}
+                                                />
+                                            </div>
+                                        );
+
+                                        if (popups[currentIndex].link_url) {
+                                            return (
+                                                <a 
+                                                    href={popups[currentIndex].link_url} 
+                                                    target={popups[currentIndex].link_url.startsWith('http') ? '_blank' : '_self'}
+                                                    rel="noopener noreferrer"
+                                                    className="block w-full h-full"
+                                                >
+                                                    {imgElement}
+                                                </a>
+                                            );
+                                        }
+                                        return imgElement;
+                                    })()}
                                 </motion.div>
                             </AnimatePresence>
                         </div>

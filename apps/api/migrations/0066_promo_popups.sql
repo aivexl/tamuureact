@@ -15,6 +15,6 @@ CREATE TABLE IF NOT EXISTS shop_promo_popups (
 -- Insert Dummy Data (3 banners)
 -- Using Tamuu logo from carousel as base if possible, otherwise placeholder
 INSERT INTO shop_promo_popups (id, image_url, link_url, placements, order_index) VALUES 
-('dummy-1', 'https://tamuu.id/tamuu-logo.png', 'https://tamuu.id', 'all', 0),
-('dummy-2', 'https://tamuu.id/tamuu-logo.png', 'https://tamuu.id', 'all', 1),
-('dummy-3', 'https://tamuu.id/tamuu-logo.png', 'https://tamuu.id', 'all', 2);
+('dummy-1', '/images/logo-tamuu-vfinal-v1.webp', 'https://tamuu.id', 'all', 0),
+('dummy-2', '/images/logo-tamuu-vfinal-v1.webp', 'https://tamuu.id', 'all', 1),
+('dummy-3', '/images/logo-tamuu-vfinal-v1.webp', 'https://tamuu.id', 'all', 2);
