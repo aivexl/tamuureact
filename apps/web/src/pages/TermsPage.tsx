@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Shield, FileText, Scale, Globe, CreditCard, Lock, UserCheck, AlertTriangle } from 'lucide-react';
+import { Shield, FileText, Scale, Globe, CreditCard, Lock, UserCheck, AlertTriangle, RefreshCcw } from 'lucide-react';
 
 export const TermsPage: React.FC = () => {
     return (
