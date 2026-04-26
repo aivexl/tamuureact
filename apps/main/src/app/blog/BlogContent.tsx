@@ -129,6 +129,15 @@ export default function BlogContent({ initialPosts, categories, carouselSlides }
 
 // Extracted Minimal Blog Card Component
 const MinimalBlogCard: React.FC<{ post: BlogPost, index: number }> = ({ post, index }) => {
+    const rawUrl = post.featured_image;
+    const isUnsplash = rawUrl?.includes('unsplash.com');
+    
+    const imageUrl = (isUnsplash || !rawUrl) 
+        ? '/images/logo-tamuu-vfinal-v1.webp' 
+        : rawUrl;
+
+    const isLogo = imageUrl.includes('logo');
+
     return (
         <motion.a 
             href={`/blog/${post.slug}`}
@@ -137,11 +146,11 @@ const MinimalBlogCard: React.FC<{ post: BlogPost, index: number }> = ({ post, in
             transition={{ delay: index * 0.05 }}
             className="group block cursor-pointer"
         >
-            <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-slate-50 mb-5">
+            <div className={`aspect-[4/3] rounded-2xl overflow-hidden bg-slate-50 mb-5 ${isLogo ? 'flex items-center justify-center p-8 md:p-12' : ''}`}>
                 <img 
-                    src={post.featured_image || 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&q=80'} 
+                    src={imageUrl} 
                     alt={post.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    className={`w-full h-full transition-transform duration-700 ${isLogo ? 'object-contain opacity-30' : 'object-cover group-hover:scale-105'}`}
                 />
             </div>
             <div>

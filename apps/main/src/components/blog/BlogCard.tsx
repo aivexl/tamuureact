@@ -36,18 +36,31 @@ export const BlogCard = React.memo(({ post, featured = false }: BlogCardProps) =
 
     const readingTime = Math.max(1, Math.ceil((post.content?.length || 0) / 1200));
 
+    // IMAGE LOGIC (Strict Fix): 
+    // 1. If it's Unsplash -> Force Logo Fallback
+    // 2. If it's missing -> Force Logo Fallback
+    // 3. Else (Manual Upload) -> Use Original URL
+    const rawUrl = post.featured_image;
+    const isUnsplash = rawUrl?.includes('unsplash.com');
+    
+    const imageUrl = (isUnsplash || !rawUrl) 
+        ? '/images/logo-tamuu-vfinal-v1.webp' 
+        : rawUrl;
+
+    const isLogo = imageUrl.includes('logo');
+
     // Featured card: full-width 21:9 hero
     if (featured) {
         return (
             <Link href={`/blog/${post.slug}`} className="block group">
                 <div
                     style={{ contain: 'content' }}
-                    className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-slate-200"
+                    className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
                 >
                     <img
                         alt={post.title}
-                        className="w-full h-full object-cover transition-transform duration-700"
-                        src={post.featured_image || 'https://placehold.co/1200x630/0A1128/white?text=Tamuu+Journal'}
+                        className={`w-full h-full transition-transform duration-700 ${isLogo ? 'object-contain p-12 md:p-32 opacity-20' : 'object-cover group-hover:scale-105'}`}
+                        src={imageUrl}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0A1128]/90 via-[#0A1128]/30 to-transparent" />
                     <div className="absolute bottom-0 left-0 p-8 md:p-16 max-w-3xl">
@@ -77,11 +90,11 @@ export const BlogCard = React.memo(({ post, featured = false }: BlogCardProps) =
             >
                 {/* Image */}
                 <div className="p-3 pb-0">
-                    <div className="aspect-[16/10] overflow-hidden rounded-xl border border-slate-100">
+                    <div className="aspect-[16/10] overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
                         <img
                             alt={post.title}
-                            className="w-full h-full object-cover transition-transform duration-500"
-                            src={post.featured_image || 'https://placehold.co/600x375/0A1128/white?text=Tamuu'}
+                            className={`w-full h-full transition-transform duration-500 ${isLogo ? 'object-contain p-8 opacity-30' : 'object-cover group-hover:scale-105'}`}
+                            src={imageUrl}
                         />
                     </div>
                 </div>
