@@ -943,6 +943,18 @@ export const admin = {
         return await res.json();
     },
 
+    async updateVendorBalance(id: string, payload: { amount: number, action: 'add' | 'subtract' | 'set' }, token?: string) {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/vendors/${id}/balance`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error('Failed to update vendor balance');
+        return await res.json();
+    },
+
     async deleteVendor(id: string, token?: string) {
         const headers: Record<string, string> = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;

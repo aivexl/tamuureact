@@ -2339,6 +2339,42 @@ export default {
                     }
                 }
 
+                if (path.startsWith('/api/admin/shop/vendors/') && path.endsWith('/balance') && method === 'POST') {
+                    try {
+                        const parts = path.split('/');
+                        // Format: /api/admin/shop/vendors/:id/balance
+                        const vendorIdFromPath = parts[parts.length - 2];
+                        if (!vendorIdFromPath) return json({ error: 'Vendor ID required' }, { ...corsHeaders, status: 400 });
+
+                        const body = await request.json();
+                        const { amount, action } = body;
+                        
+                        if (typeof amount !== 'number' || amount < 0) {
+                            return json({ error: 'Valid amount is required' }, { ...corsHeaders, status: 400 });
+                        }
+
+                        let query = '';
+                        if (action === 'add') {
+                            query = 'UPDATE shop_vendors SET ad_balance = ad_balance + ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+                        } else if (action === 'subtract') {
+                            query = 'UPDATE shop_vendors SET ad_balance = MAX(ad_balance - ?, 0), updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+                        } else if (action === 'set') {
+                            query = 'UPDATE shop_vendors SET ad_balance = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?';
+                        } else {
+                            return json({ error: 'Valid action (add, subtract, set) is required' }, { ...corsHeaders, status: 400 });
+                        }
+
+                        await env.DB.prepare(query).bind(amount, vendorIdFromPath).run();
+                        
+                        const updated = await env.DB.prepare('SELECT ad_balance FROM shop_vendors WHERE id = ?').bind(vendorIdFromPath).first();
+
+                        return json({ success: true, ad_balance: updated?.ad_balance || 0 }, corsHeaders);
+                    } catch (error) {
+                        console.error('[Admin] Vendor Balance Error:', error.message);
+                        return json({ error: 'Failed to update vendor balance', details: error.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+
                 if (path.startsWith('/api/admin/shop/vendors/') && method === 'DELETE') {
                     try {
                         const parts = path.split('/');

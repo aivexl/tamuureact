@@ -1,20 +1,37 @@
 import React, { useState, useRef } from 'react';
 import { m, AnimatePresence } from 'framer-motion';
-import { Search, Store, UserCheck, ShieldOff, Image as ImageIcon, Plus, Trash2, Link as LinkIcon, UploadCloud, CheckCircle2, AlertTriangle, ShieldAlert, Ban, Power, Trash } from 'lucide-react';
+import { 
+    Search, Store, UserCheck, ShieldOff, Image as ImageIcon, 
+    Plus, Trash2, Link as LinkIcon, UploadCloud, CheckCircle2, 
+    AlertTriangle, ShieldAlert, Ban, Power, Trash, Coins, 
+    Wallet, PlusCircle, MinusCircle, DollarSign
+} from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
-import { useAdminShopCarousel, useAdminAddCarousel, useAdminDeleteCarousel, useAdminVendors, useAdminUpdateVendor } from '../../hooks/queries/useShop';
+import { 
+    useAdminShopCarousel, useAdminAddCarousel, useAdminDeleteCarousel, 
+    useAdminVendors, useAdminUpdateVendor, useAdminUpdateVendorBalance 
+} from '../../hooks/queries/useShop';
 import { useStore } from '../../store/useStore';
 import { storage, admin } from '../../lib/api';
+import { formatCurrency } from '../../lib/utils';
+import { ConfirmationModal } from '../Modals/ConfirmationModal';
 
 export const AdminStoreManagement: React.FC = () => {
     const { token } = useStore();
     const [activeTab, setActiveTab] = useState<'vendors' | 'carousel'>('vendors');
     const [searchQuery, setSearchQuery] = useState('');
     
+    // Balance Adjustment State
+    const [isBalanceModalOpen, setIsBalanceModalOpen] = useState(false);
+    const [selectedVendorForBalance, setSelectedVendorForBalance] = useState<any>(null);
+    const [balanceAmount, setBalanceAmount] = useState<string>('');
+    const [balanceAction, setBalanceAction] = useState<'add' | 'subtract' | 'set'>('add');
+
     // Real Data Hooks
     const { data: vendors = [], isLoading: isLoadingVendors, refetch: refetchVendors } = useAdminVendors();
     const updateVendorMutation = useAdminUpdateVendor();
+    const updateBalanceMutation = useAdminUpdateVendorBalance();
 
     // Carousel State
     const { data: slides = [], isLoading: isLoadingCarousel } = useAdminShopCarousel(token || '');
@@ -112,6 +129,26 @@ export const AdminStoreManagement: React.FC = () => {
         });
     };
 
+    const handleUpdateBalance = () => {
+        const amount = parseInt(balanceAmount);
+        if (isNaN(amount) || amount < 0) {
+            return toast.error('Nominal tidak valid');
+        }
+
+        if (!selectedVendorForBalance) return;
+
+        updateBalanceMutation.mutate({
+            id: selectedVendorForBalance.id,
+            payload: { amount, action: balanceAction }
+        }, {
+            onSuccess: () => {
+                setIsBalanceModalOpen(false);
+                setBalanceAmount('');
+                setSelectedVendorForBalance(null);
+            }
+        });
+    };
+
     const handleDeleteSlide = (id: string) => {
         if (confirm('Are you sure you want to delete this slide?')) {
             deleteCarouselMutation.mutate({ token: token || '', id });
@@ -188,6 +225,7 @@ export const AdminStoreManagement: React.FC = () => {
                                         <th className="px-8 py-6">Vendor Profile</th>
                                         <th className="px-8 py-6">Identity</th>
                                         <th className="px-8 py-6">Status</th>
+                                        <th className="px-8 py-6">Ad Balance</th>
                                         <th className="px-8 py-6 text-right">Actions</th>
                                     </tr>
                                 </thead>
@@ -230,8 +268,30 @@ export const AdminStoreManagement: React.FC = () => {
                                                     </div>
                                                 </div>
                                             </td>
+                                            <td className="px-8 py-6">
+                                                <div className="flex flex-col gap-1">
+                                                    <div className="flex items-center gap-2 text-teal-400 font-black">
+                                                        <Coins className="w-3.5 h-3.5" />
+                                                        <span>{formatCurrency(vendor.ad_balance || 0)}</span>
+                                                    </div>
+                                                    <div className="text-[8px] text-slate-500 font-bold uppercase tracking-widest">Available Credits</div>
+                                                </div>
+                                            </td>
                                             <td className="px-8 py-6 text-right">
                                                 <div className="flex items-center justify-end gap-2">
+                                                    {/* BALANCE ADJUSTMENT */}
+                                                    <button
+                                                        onClick={() => {
+                                                            setSelectedVendorForBalance(vendor);
+                                                            setIsBalanceModalOpen(true);
+                                                            setBalanceAction('add');
+                                                        }}
+                                                        className="p-2.5 rounded-xl bg-white/5 text-teal-500 border border-white/5 hover:border-teal-500/50 hover:bg-teal-500/10 transition-all"
+                                                        title="Adjust Ad Balance"
+                                                    >
+                                                        <Wallet className="w-4 h-4" />
+                                                    </button>
+
                                                     {/* VERIFY / UNVERIFY */}
                                                     <button
                                                         onClick={() => handleVerifyVendor(vendor.id, vendor.nama_toko, vendor.is_verified)}
@@ -415,6 +475,84 @@ export const AdminStoreManagement: React.FC = () => {
                     </div>
                 </div>
             )}
+
+            {/* BALANCE ADJUSTMENT MODAL */}
+            <ConfirmationModal
+                isOpen={isBalanceModalOpen}
+                onClose={() => {
+                    if (!updateBalanceMutation.isPending) {
+                        setIsBalanceModalOpen(false);
+                        setSelectedVendorForBalance(null);
+                        setBalanceAmount('');
+                    }
+                }}
+                onConfirm={handleUpdateBalance}
+                title={`Sesuaikan Saldo Ads: ${selectedVendorForBalance?.nama_toko}`}
+                confirmText="Konfirmasi Perubahan"
+                cancelText="Batal"
+                isLoading={updateBalanceMutation.isPending}
+            >
+                <div className="space-y-6 py-4">
+                    <div className="p-4 bg-teal-500/5 border border-teal-500/10 rounded-2xl flex items-center justify-between">
+                        <div>
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Saldo Saat Ini</p>
+                            <p className="text-lg font-black text-teal-400 italic">{formatCurrency(selectedVendorForBalance?.ad_balance || 0)}</p>
+                        </div>
+                        <Wallet className="w-8 h-8 text-teal-500/20" />
+                    </div>
+
+                    <div className="space-y-4">
+                        <div className="flex p-1 bg-white/5 rounded-xl border border-white/5">
+                            <button
+                                onClick={() => setBalanceAction('add')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                                    balanceAction === 'add' ? 'bg-teal-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'
+                                }`}
+                            >
+                                <PlusCircle className="w-3.5 h-3.5" />
+                                Tambah
+                            </button>
+                            <button
+                                onClick={() => setBalanceAction('subtract')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                                    balanceAction === 'subtract' ? 'bg-teal-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'
+                                }`}
+                            >
+                                <MinusCircle className="w-3.5 h-3.5" />
+                                Kurangi
+                            </button>
+                            <button
+                                onClick={() => setBalanceAction('set')}
+                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
+                                    balanceAction === 'set' ? 'bg-teal-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'
+                                }`}
+                            >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                Atur Total
+                            </button>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Nominal Saldo (IDR)</label>
+                            <div className="relative">
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-500 tracking-tighter italic">Rp</div>
+                                <input 
+                                    type="number"
+                                    placeholder="0"
+                                    value={balanceAmount}
+                                    onChange={(e) => setBalanceAmount(e.target.value)}
+                                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl pl-12 pr-6 py-4 text-sm font-black text-white focus:ring-0 placeholder:text-white/10"
+                                />
+                            </div>
+                            <p className="text-[8px] text-slate-600 font-bold uppercase tracking-widest ml-1">
+                                {balanceAction === 'add' && "Saldo akan ditambahkan ke jumlah yang sudah ada."}
+                                {balanceAction === 'subtract' && "Saldo akan dikurangi dari jumlah yang sudah ada (Min. 0)."}
+                                {balanceAction === 'set' && "Saldo akan diganti sepenuhnya dengan nilai ini."}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </ConfirmationModal>
         </div>
     );
 };

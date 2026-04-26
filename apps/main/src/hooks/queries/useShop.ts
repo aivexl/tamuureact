@@ -349,6 +349,19 @@ export const useAdminUpdateVendor = () => {
     });
 };
 
+export const useAdminUpdateVendorBalance = () => {
+    const { token } = useStore();
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, payload }: { id: string; payload: { amount: number; action: 'add' | 'subtract' | 'set' } }) =>
+            admin.updateVendorBalance(id, payload, token || undefined),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['admin_all_vendors'] });
+            toast.success('Saldo ads diperbarui');
+        }
+    });
+};
+
 export const useAdminVendors = () => {
     const { token } = useStore();
     return useQuery({
