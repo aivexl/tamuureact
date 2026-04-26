@@ -53,7 +53,7 @@ export default function HomeContent() {
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/carousel`).then(r => r.json()),
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/products/discovery?limit=50`).then(r => r.json()),
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/products/featured`).then(r => r.json()),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog?limit=4`).then(r => r.json()),
+                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog?limit=6`).then(r => r.json()),
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/categories`).then(r => r.json()),
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/ads?position=SPECIAL_FOR_YOU_HOME`).then(r => r.json()),
                     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/ads?position=SHOP_SPECIAL_FOR_YOU`).then(r => r.json()),
@@ -108,7 +108,7 @@ export default function HomeContent() {
         if (el) el.scrollBy({ left: distance, behavior: 'smooth' });
     };
 
-    if (isLoading) return <PremiumLoader variant="full" label="Syncing Tamuu Ecosystem..." showLabel />;
+    if (isLoading) return <PremiumLoader variant="full" label="Sinkronisasi Ekosistem Tamuu..." showLabel />;
 
     return (
         <main className="min-h-screen bg-white">
@@ -129,14 +129,14 @@ export default function HomeContent() {
                                 className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'products' ? 'bg-[#0A1128] text-white shadow-lg' : 'text-slate-400 hover:text-[#0A1128]'}`}
                             >
                                 <ShoppingBag className="w-3.5 h-3.5" />
-                                Products
+                                Produk
                             </button>
                             <button 
                                 onClick={() => setActiveTab('stores')}
                                 className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'stores' ? 'bg-[#0A1128] text-white shadow-lg' : 'text-slate-400 hover:text-[#0A1128]'}`}
                             >
                                 <Store className="w-3.5 h-3.5" />
-                                Stores
+                                Vendor
                             </button>
                         </div>
 
@@ -202,13 +202,13 @@ export default function HomeContent() {
                 {/* Featured Products */}
                 <section className="mb-20">
                     <div className="flex items-center justify-between mb-8 px-4">
-                        <h2 className="text-2xl font-black text-[#0A1128] uppercase tracking-tight italic underline decoration-[#FFBF00] decoration-4 underline-offset-8">Editor's Choice</h2>
+                        <h2 className="text-2xl font-black text-[#0A1128] uppercase tracking-tight italic underline decoration-[#FFBF00] decoration-4 underline-offset-8">Produk Featured</h2>
                         <Link href="/shop" className="text-[10px] font-black uppercase tracking-widest text-[#FFBF00] flex items-center gap-2 hover:text-[#0A1128] transition-colors">
-                            Discovery Hub <ArrowRight className="w-4 h-4" />
+                            Lihat Semua <ArrowRight className="w-4 h-4" />
                         </Link>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8">
-                        {data.featured.slice(0, 6).map((product: any) => (
+                        {data.featured.map((product: any) => (
                             <ProductCard key={product.id} product={product} />
                         ))}
                     </div>
@@ -218,7 +218,7 @@ export default function HomeContent() {
                 <section className="mb-32">
                     <ProductGrid 
                         products={filteredProducts}
-                        title="All Collections"
+                        title={activeTab === 'products' ? 'Semua Produk' : 'Semua Vendor'}
                     />
                 </section>
 
