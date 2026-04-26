@@ -14,13 +14,12 @@ export const PromoPopup: React.FC = () => {
         const queryParams = new URLSearchParams(window.location.search);
         const isDebug = queryParams.get('debug_popup') === 'true';
         
-        // Only show once per session (unless debug mode is on)
-        const hasShown = sessionStorage.getItem('tamuu_promo_shown');
-        if (hasShown && !isDebug) return;
+        // Removed sessionStorage check - now shows on every refresh
 
         const fetchPopups = async () => {
             try {
                 const path = location.pathname;
+                const isAdminPath = path.startsWith('/admin');
                 
                 // CRITICAL: Exclude Invitation & Preview Pages (Ads not allowed here)
                 const isInvitation = path.startsWith('/v/') || path.startsWith('/preview/') || (path.split('/').length <= 3 && path !== '/' && !['/shop', '/blog', '/admin', '/dashboard', '/profile', '/billing', '/onboarding', '/upgrade', '/guests', '/wishes', '/editor', '/vendor', '/terms', '/privacy', '/about'].some(p => path.startsWith(p)));
@@ -31,14 +30,26 @@ export const PromoPopup: React.FC = () => {
                 let placement = 'all';
                 if (path === '/') placement = 'homepage';
                 else if (path.startsWith('/shop')) placement = 'shop';
-                else if (path.startsWith('/admin')) placement = 'admin';
+                else if (isAdminPath) placement = 'admin'; // Specific admin placement
                 else if (path.startsWith('/dashboard')) placement = 'dashboard';
                 else if (path.startsWith('/v/')) placement = 'user';
 
-                const data = await shop.getPopups(placement);
+                // Fetch popups. The backend already filters by placement.
+                // We need to ensure that if placement is 'admin', it doesn't get 'all' popups if they are intended for users only.
+                // However, the current backend query for placement X is: WHERE is_active = 1 AND (placements LIKE %X% OR placements = 'all')
+                // To support the new requirement, we should probably handle it here or in the API.
+                // User wants 'all' to be 'all user pages'. 
+                
+                let data = await shop.getPopups(placement);
+                
+                // Client-side Filter: If we are in ADMIN, and the popup is marked 'all', 
+                // the user said 'all' is only for user pages. So exclude 'all' popups from admin unless specifically marked 'admin'.
+                if (isAdminPath) {
+                    data = data.filter((p: any) => p.placements.includes('admin'));
+                }
+
                 if (data && data.length > 0) {
                     setPopups(data);
-                    // Reduced delay for better UX
                     setTimeout(() => setIsVisible(true), 500);
                 }
             } catch (error) {
@@ -51,7 +62,6 @@ export const PromoPopup: React.FC = () => {
 
     const handleClose = () => {
         setIsVisible(false);
-        sessionStorage.setItem('tamuu_promo_shown', 'true');
     };
 
     const nextSlide = (e: React.MouseEvent) => {
