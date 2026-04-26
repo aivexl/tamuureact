@@ -104,6 +104,7 @@ export const Footer: React.FC = () => {
                     </p>
                     <div className="flex items-center gap-8">
                         <SmartLink href="/privacy" className="text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Privacy Policy</SmartLink>
+                        <SmartLink href="/terms" className="text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Terms & Conditions</SmartLink>
                         <SmartLink href="/terms" className="text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Terms of Service</SmartLink>
                     </div>
                 </div>

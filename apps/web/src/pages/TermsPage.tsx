@@ -92,6 +92,16 @@ export const TermsPage: React.FC = () => {
                             Tamuu, at its sole discretion, may suspend or terminate this Agreement with immediate effect if you commit any material breach of your obligations under this Agreement or cease to carry on business.
                         </p>
                     </section>
+
+                    <section>
+                        <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-3 mb-6 uppercase tracking-tight">
+                            <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-indigo-500" />
+                            7. Governmental Independence & Neutrality
+                        </h2>
+                        <p>
+                            Tamuu operates as a strictly independent private entity. We do not participate in, collaborate with, or engage in any projects, procurement initiatives, or partnerships lead by the government of the Republic of Indonesia. Our services and platform are provided independently of any governmental affiliations or governmental commercial activities.
+                        </p>
+                    </section>
                 </div>
 
                 {/* Footer Legal */}
