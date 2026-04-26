@@ -2165,7 +2165,10 @@ export default {
                     let query = 'SELECT * FROM shop_promo_popups WHERE is_active = 1';
                     let params = [];
 
-                    if (placement !== 'all') {
+                    if (placement === 'admin') {
+                        // Admin is strictly separated from 'all'
+                        query += " AND placements LIKE '%admin%'";
+                    } else if (placement !== 'all') {
                         query += " AND (placements LIKE ? OR placements = 'all')";
                         params.push(`%${placement}%`);
                     }

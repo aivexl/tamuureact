@@ -61,11 +61,11 @@ export const BlogCard = React.memo(({ post, featured = false }: BlogCardProps) =
                     viewport={{ once: true }}
                     transition={{ duration: 0.5 }}
                     style={{ contain: 'content' }}
-                    className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-slate-200 bg-white"
+                    className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
                 >
                     <img
                         alt={post.title}
-                        className={`w-full h-full transition-transform duration-700 ${isLogo ? 'object-contain p-12 md:p-32 opacity-30' : 'object-cover group-hover:scale-105'}`}
+                        className={`w-full h-full transition-transform duration-700 ${isLogo ? 'object-contain p-12 md:p-32 opacity-20' : 'object-cover group-hover:scale-105'}`}
                         src={imageUrl}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-[#0A1128]/90 via-[#0A1128]/30 to-transparent" />
@@ -100,10 +100,10 @@ export const BlogCard = React.memo(({ post, featured = false }: BlogCardProps) =
             >
                 {/* Image */}
                 <div className="p-3 pb-0">
-                    <div className="aspect-[16/10] overflow-hidden rounded-xl border border-slate-100 bg-white">
+                    <div className="aspect-[16/10] overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
                         <img
                             alt={post.title}
-                            className={`w-full h-full transition-transform duration-500 ${isLogo ? 'object-contain p-4 md:p-8 opacity-30' : 'object-cover group-hover:scale-105'}`}
+                            className={`w-full h-full transition-transform duration-500 ${isLogo ? 'object-contain p-8 opacity-30' : 'object-cover group-hover:scale-105'}`}
                             src={imageUrl}
                         />
                     </div>
