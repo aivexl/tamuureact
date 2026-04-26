@@ -188,6 +188,18 @@ export const shopCategories = {
         return await res.json();
     },
 
+    async adminReorder(categories: { id: string, position: number }[], token?: string) {
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/categories/reorder`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({ categories })
+        });
+        if (!res.ok) throw new Error('Failed to reorder categories');
+        return await res.json();
+    },
+
     async adminDelete(id: string, token?: string) {
         const headers: Record<string, string> = {};
         if (token) headers['Authorization'] = `Bearer ${token}`;

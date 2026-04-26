@@ -5,7 +5,8 @@ import {
     AlertCircle, Megaphone, Check, X, LayoutTemplate, 
     UploadCloud, Search, Star, Sparkles, ShoppingBag, Store,
     Filter, ArrowRight, ExternalLink, ShieldCheck, Phone, MessageSquare,
-    Globe, LayoutGrid, Heart, Utensils, Camera, Palette, Building2, Music, Gift, Tag
+    Globe, LayoutGrid, Heart, Utensils, Camera, Palette, Building2, Music, Gift, Tag,
+    ArrowUp, ArrowDown
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import { PremiumLoader } from '../ui/PremiumLoader';
@@ -13,6 +14,7 @@ import { admin, shop, storage, safeFetch, API_BASE, shopCategories, ShopCategory
 import { useStore } from '../../store/useStore';
 import { useAdminProducts, useAdminUpdateProduct, useAdminUpdateVendor, useAdminVendors } from '../../hooks/queries/useShop';
 import { ShopIcon, RECOMMENDED_SHOP_ICONS } from '@tamuu/ui';
+import { ConfirmationModal } from '../Modals/ConfirmationModal';
 
 export const AdminShopSettings: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -24,6 +26,10 @@ export const AdminShopSettings: React.FC = () => {
     const [isFetchingCategories, setIsFetchingCategories] = useState(false);
     const [newCategory, setNewCategory] = useState({ name: '', slug: '', icon: 'LayoutGrid', is_active: 1 });
     const [showIconPicker, setShowIconPicker] = useState(false);
+    
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     const fetchCategories = async () => {
         setIsFetchingCategories(true);
@@ -47,14 +53,51 @@ export const AdminShopSettings: React.FC = () => {
         }
     };
 
-    const handleDeleteCategory = async (id: string) => {
-        if (!window.confirm('Hapus kategori ini secara permanen?')) return;
+    const confirmDeleteCategory = async () => {
+        if (!categoryToDelete) return;
+        setIsDeleting(true);
         try {
-            await shopCategories.adminDelete(id, token || undefined);
+            await shopCategories.adminDelete(categoryToDelete, token || undefined);
             toast.success('Kategori berhasil dihapus');
+            setIsDeleteDialogOpen(false);
+            setCategoryToDelete(null);
             fetchCategories();
         } catch (error) {
             toast.error('Gagal menghapus kategori');
+        } finally {
+            setIsDeleting(false);
+        }
+    };
+
+    const handleDeleteCategory = (id: string) => {
+        setCategoryToDelete(id);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const handleMoveCategory = async (index: number, direction: 'up' | 'down') => {
+        const newCategories = [...categories];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        
+        if (targetIndex < 0 || targetIndex >= newCategories.length) return;
+
+        // Swap
+        [newCategories[index], newCategories[targetIndex]] = [newCategories[targetIndex], newCategories[index]];
+
+        // Update positions
+        const reorderPayload = newCategories.map((cat, idx) => ({
+            id: cat.id,
+            position: idx
+        }));
+
+        // Optimistic UI update
+        setCategories(newCategories.map((cat, idx) => ({ ...cat, position: idx })));
+
+        try {
+            await shopCategories.adminReorder(reorderPayload, token || undefined);
+            toast.success('Urutan kategori diperbarui');
+        } catch (error) {
+            toast.error('Gagal memperbarui urutan');
+            fetchCategories(); // Rollback
         }
     };
 
@@ -481,7 +524,7 @@ export const AdminShopSettings: React.FC = () => {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -10 }}
-                        className="bg-[#141414] border border-white/5 rounded-[2.5rem] overflow-hidden shadow-2xl"
+                        className="bg-[#141414] border border-white/5 rounded-[2.5rem] shadow-2xl"
                     >
                         <div className="p-8 border-b border-white/5 flex justify-between items-center bg-[#1A1A1A]">
                             <div>
@@ -540,7 +583,7 @@ export const AdminShopSettings: React.FC = () => {
                                                     initial={{ opacity: 0, y: 10, scale: 0.95 }}
                                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                                     exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                                                    className="absolute bottom-full left-0 mb-4 w-[280px] bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-2xl p-4 z-50 overflow-hidden"
+                                                    className="absolute bottom-full left-0 mb-4 w-[280px] bg-[#1A1A1A] border border-white/10 rounded-2xl shadow-2xl p-4 z-[100] overflow-hidden"
                                                 >
                                                     <div className="flex justify-between items-center mb-4 pb-2 border-b border-white/5">
                                                         <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest italic">Select Category Icon</span>
@@ -589,7 +632,7 @@ export const AdminShopSettings: React.FC = () => {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-white/5">
-                                        {categories.map((cat) => (
+                                        {categories.map((cat, idx) => (
                                             <tr key={cat.id} className="group hover:bg-white/[0.01] transition-colors">
                                                 <td className="px-6 py-5">
                                                     <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-[#FFBF00] border border-white/5">
@@ -613,18 +656,56 @@ export const AdminShopSettings: React.FC = () => {
                                                     </button>
                                                 </td>
                                                 <td className="px-6 py-5 text-right">
-                                                    <button 
-                                                        onClick={() => handleDeleteCategory(cat.id)}
-                                                        className="p-2.5 text-slate-600 hover:text-rose-500 transition-colors"
-                                                    >
-                                                        <Trash2 className="w-4 h-4" />
-                                                    </button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <div className="flex flex-col gap-1">
+                                                            <button 
+                                                                onClick={() => handleMoveCategory(idx, 'up')}
+                                                                disabled={idx === 0}
+                                                                className={`p-1 rounded bg-white/5 hover:bg-white/10 transition-colors ${idx === 0 ? 'opacity-20 cursor-not-allowed' : 'text-slate-400 hover:text-white'}`}
+                                                                title="Pindahkan ke atas"
+                                                            >
+                                                                <ArrowUp className="w-3 h-3" />
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleMoveCategory(idx, 'down')}
+                                                                disabled={idx === categories.length - 1}
+                                                                className={`p-1 rounded bg-white/5 hover:bg-white/10 transition-colors ${idx === categories.length - 1 ? 'opacity-20 cursor-not-allowed' : 'text-slate-400 hover:text-white'}`}
+                                                                title="Pindahkan ke bawah"
+                                                            >
+                                                                <ArrowDown className="w-3 h-3" />
+                                                            </button>
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => handleDeleteCategory(cat.id)}
+                                                            className="p-2.5 text-slate-600 hover:text-rose-500 transition-colors"
+                                                            title="Hapus Kategori"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>
                                 </table>
                             </div>
+
+                            <ConfirmationModal 
+                                isOpen={isDeleteDialogOpen}
+                                onClose={() => {
+                                    if (!isDeleting) {
+                                        setIsDeleteDialogOpen(false);
+                                        setCategoryToDelete(null);
+                                    }
+                                }}
+                                onConfirm={confirmDeleteCategory}
+                                title="Hapus Kategori?"
+                                message="Apakah Anda yakin ingin menghapus kategori ini secara permanen? Vendor yang terhubung mungkin perlu memperbarui kategori mereka."
+                                confirmText="Ya, Hapus"
+                                cancelText="Batal"
+                                type="danger"
+                                isLoading={isDeleting}
+                            />
                         </div>
                     </m.div>
                 )}

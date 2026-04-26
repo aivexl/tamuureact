@@ -2749,50 +2749,96 @@ export default {
                 // 4e. ADMIN CATEGORY MANAGEMENT: Manage shop categories
                 if (path === '/api/admin/shop/categories' && method === 'GET') {
                     try {
-                        const results = await env.DB.prepare('SELECT * FROM shop_category ORDER BY name ASC').all();
-                        return json({ success: true, categories: results.results }, corsHeaders);
+                        const results = await env.DB.prepare('SELECT * FROM shop_category ORDER BY position ASC, name ASC').all();
+                        const categories = results.results || [];
+                        return json({ success: true, categories }, { headers: corsHeaders });
                     } catch (error) {
-                        return json({ error: 'Failed to fetch categories', details: error.message }, { ...corsHeaders, status: 500 });
+                        console.error('[Admin] Categories GET Error:', error.message);
+                        return json({ error: 'Failed to fetch categories', details: error.message }, { headers: corsHeaders, status: 500 });
+                    }
+                }
+
+                if (path === '/api/admin/shop/categories/reorder' && method === 'POST') {
+                    try {
+                        const { categories } = await request.json();
+                        if (!Array.isArray(categories)) {
+                            return json({ error: 'Array of categories required' }, { headers: corsHeaders, status: 400 });
+                        }
+
+                        // Use batch to update positions
+                        const statements = categories.map(cat => 
+                            env.DB.prepare('UPDATE shop_category SET position = ? WHERE id = ?').bind(cat.position, cat.id)
+                        );
+                        
+                        await env.DB.batch(statements);
+                        return json({ success: true }, { headers: corsHeaders });
+                    } catch (error) {
+                        console.error('[Admin] Categories REORDER Error:', error.message);
+                        return json({ error: 'Failed to reorder categories', details: error.message }, { headers: corsHeaders, status: 500 });
                     }
                 }
 
                 if (path === '/api/admin/shop/categories' && method === 'POST') {
                     try {
-                        const { id, name, slug, icon, is_active } = await request.json();
-                        if (!name || !slug) return json({ error: 'Name and slug required' }, { ...corsHeaders, status: 400 });
+                        const body = await request.json();
+                        const { id, name, slug, icon, is_active, position } = body;
+                        
+                        if (!name || !slug) {
+                            return json({ error: 'Name and slug are required' }, { headers: corsHeaders, status: 400 });
+                        }
 
                         const catId = id || crypto.randomUUID();
+                        
+                        // Check if it exists to decide between INSERT and UPDATE
                         const existing = id ? await env.DB.prepare('SELECT id FROM shop_category WHERE id = ?').bind(id).first() : null;
 
                         if (existing) {
                             await env.DB.prepare(`
-                                UPDATE shop_category SET name=?, slug=?, icon=?, is_active=? WHERE id=?
-                            `).bind(name, slug, icon || 'LayoutGrid', is_active ? 1 : 0, id).run();
+                                UPDATE shop_category 
+                                SET name = ?, slug = ?, icon = ?, is_active = ?, position = COALESCE(?, position), created_at = created_at
+                                WHERE id = ?
+                            `).bind(name, slug, icon || 'LayoutGrid', is_active ? 1 : 0, position !== undefined ? position : null, id).run();
                         } else {
+                            // Find max position for new category
+                            const maxPosResult = await env.DB.prepare('SELECT MAX(position) as maxPos FROM shop_category').first();
+                            const nextPos = (maxPosResult?.maxPos || 0) + 1;
+
                             await env.DB.prepare(`
-                                INSERT INTO shop_category (id, name, slug, icon, is_active) VALUES (?, ?, ?, ?, ?)
-                            `).bind(catId, name, slug, icon || 'LayoutGrid', is_active ? 1 : 0).run();
+                                INSERT INTO shop_category (id, name, slug, icon, is_active, position, created_at)
+                                VALUES (?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                            `).bind(catId, name, slug, icon || 'LayoutGrid', is_active ? 1 : 0, position !== undefined ? position : nextPos).run();
                         }
-                        return json({ success: true, id: catId }, corsHeaders);
+                        
+                        return json({ success: true, id: catId }, { headers: corsHeaders });
                     } catch (error) {
-                        return json({ error: 'Failed to save category', details: error.message }, { ...corsHeaders, status: 500 });
+                        console.error('[Admin] Categories POST Error:', error.message);
+                        return json({ error: 'Failed to save category', details: error.message }, { headers: corsHeaders, status: 500 });
                     }
                 }
 
                 if (path.startsWith('/api/admin/shop/categories/') && method === 'DELETE') {
-                    const id = path.split('/').pop();
-                    await env.DB.prepare('DELETE FROM shop_category WHERE id = ?').bind(id).run();
-                    return json({ success: true }, corsHeaders);
+                    try {
+                        const id = path.split('/').pop();
+                        if (!id) return json({ error: 'ID required' }, { headers: corsHeaders, status: 400 });
+                        
+                        await env.DB.prepare('DELETE FROM shop_category WHERE id = ?').bind(id).run();
+                        return json({ success: true }, { headers: corsHeaders });
+                    } catch (error) {
+                        console.error('[Admin] Categories DELETE Error:', error.message);
+                        return json({ error: 'Failed to delete category', details: error.message }, { headers: corsHeaders, status: 500 });
+                    }
                 }
             }
 
             // 5f. PUBLIC DISCOVERY: Get Official Categories
             if (path === '/api/shop/categories' && method === 'GET') {
                 try {
-                    const results = await env.DB.prepare('SELECT * FROM shop_category WHERE is_active = 1 ORDER BY name ASC').all();
-                    return json({ success: true, categories: results.results }, corsHeaders);
+                    const results = await env.DB.prepare('SELECT * FROM shop_category WHERE is_active = 1 ORDER BY position ASC, name ASC').all();
+                    const categories = results.results || [];
+                    return json({ success: true, categories }, { headers: corsHeaders });
                 } catch (error) {
-                    return json({ error: 'Failed to fetch categories' }, { ...corsHeaders, status: 500 });
+                    console.error('[Public] Categories GET Error:', error.message);
+                    return json({ error: 'Failed to fetch categories', details: error.message }, { headers: corsHeaders, status: 500 });
                 }
             }
 
