@@ -16,6 +16,7 @@ import { useStore } from '../../store/useStore';
 import { storage, admin } from '../../lib/api';
 import { formatCurrency } from '../../lib/utils';
 import { ConfirmationModal } from '../Modals/ConfirmationModal';
+import { Modal } from '../ui/Modal';
 
 export const AdminStoreManagement: React.FC = () => {
     const { token } = useStore();
@@ -27,6 +28,11 @@ export const AdminStoreManagement: React.FC = () => {
     const [selectedVendorForBalance, setSelectedVendorForBalance] = useState<any>(null);
     const [balanceAmount, setBalanceAmount] = useState<string>('');
     const [balanceAction, setBalanceAction] = useState<'add' | 'subtract' | 'set'>('add');
+
+    // Delete Vendor State
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [vendorToDelete, setVendorToDelete] = useState<any>(null);
+    const [isDeletingVendor, setIsDeletingVendor] = useState(false);
 
     // Real Data Hooks
     const { data: vendors = [], isLoading: isLoadingVendors, refetch: refetchVendors } = useAdminVendors();
@@ -98,19 +104,26 @@ export const AdminStoreManagement: React.FC = () => {
         });
     };
 
-    const handleDeleteVendor = async (id: string, name: string) => {
-        if (!confirm(`Are you sure you want to PERMANENTLY DELETE vendor "${name}"? This action cannot be undone.`)) return;
+    const handleDeleteVendor = (id: string, name: string) => {
+        setVendorToDelete({ id, name });
+        setIsDeleteDialogOpen(true);
+    };
 
+    const confirmDeleteVendor = async () => {
+        if (!vendorToDelete) return;
+        setIsDeletingVendor(true);
         try {
-            // We use a generic delete endpoint if available or call admin API
-            // Let's check api.ts for deleteVendor
-            const res = await admin.deleteVendor(id, token || undefined);
+            const res = await admin.deleteVendor(vendorToDelete.id, token || undefined);
             if (res.success) {
-                toast.success(`Vendor "${name}" deleted successfully.`);
+                toast.success(`Vendor "${vendorToDelete.name}" deleted successfully.`);
+                setIsDeleteDialogOpen(false);
+                setVendorToDelete(null);
                 refetchVendors();
             }
         } catch (error: any) {
             toast.error(error.message || 'Failed to delete vendor');
+        } finally {
+            setIsDeletingVendor(false);
         }
     };
 
@@ -477,7 +490,7 @@ export const AdminStoreManagement: React.FC = () => {
             )}
 
             {/* BALANCE ADJUSTMENT MODAL */}
-            <ConfirmationModal
+            <Modal
                 isOpen={isBalanceModalOpen}
                 onClose={() => {
                     if (!updateBalanceMutation.isPending) {
@@ -486,73 +499,119 @@ export const AdminStoreManagement: React.FC = () => {
                         setBalanceAmount('');
                     }
                 }}
-                onConfirm={handleUpdateBalance}
                 title={`Sesuaikan Saldo Ads: ${selectedVendorForBalance?.nama_toko}`}
-                confirmText="Konfirmasi Perubahan"
-                cancelText="Batal"
-                isLoading={updateBalanceMutation.isPending}
             >
-                <div className="space-y-6 py-4">
-                    <div className="p-4 bg-teal-500/5 border border-teal-500/10 rounded-2xl flex items-center justify-between">
+                <div className="space-y-8 bg-[#141414] -m-8 p-8">
+                    <div className="p-6 bg-teal-500/5 border border-teal-500/10 rounded-3xl flex items-center justify-between shadow-inner">
                         <div>
-                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">Saldo Saat Ini</p>
-                            <p className="text-lg font-black text-teal-400 italic">{formatCurrency(selectedVendorForBalance?.ad_balance || 0)}</p>
+                            <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] mb-1">Saldo Saat Ini</p>
+                            <p className="text-3xl font-black text-teal-400 italic tracking-tight">{formatCurrency(selectedVendorForBalance?.ad_balance || 0)}</p>
                         </div>
-                        <Wallet className="w-8 h-8 text-teal-500/20" />
+                        <div className="w-16 h-16 rounded-2xl bg-teal-500/10 flex items-center justify-center">
+                            <Wallet className="w-8 h-8 text-teal-500" />
+                        </div>
                     </div>
 
-                    <div className="space-y-4">
-                        <div className="flex p-1 bg-white/5 rounded-xl border border-white/5">
+                    <div className="space-y-6">
+                        <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5">
                             <button
                                 onClick={() => setBalanceAction('add')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                                    balanceAction === 'add' ? 'bg-teal-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'
+                                className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                    balanceAction === 'add' ? 'bg-teal-500 text-white shadow-xl shadow-teal-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5'
                                 }`}
                             >
-                                <PlusCircle className="w-3.5 h-3.5" />
+                                <PlusCircle className="w-4 h-4" />
                                 Tambah
                             </button>
                             <button
                                 onClick={() => setBalanceAction('subtract')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                                    balanceAction === 'subtract' ? 'bg-teal-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'
+                                className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                    balanceAction === 'subtract' ? 'bg-teal-500 text-white shadow-xl shadow-teal-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5'
                                 }`}
                             >
-                                <MinusCircle className="w-3.5 h-3.5" />
+                                <MinusCircle className="w-4 h-4" />
                                 Kurangi
                             </button>
                             <button
                                 onClick={() => setBalanceAction('set')}
-                                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${
-                                    balanceAction === 'set' ? 'bg-teal-500 text-white shadow-lg' : 'text-slate-400 hover:text-white'
+                                className={`flex-1 flex items-center justify-center gap-2 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                                    balanceAction === 'set' ? 'bg-teal-500 text-white shadow-xl shadow-teal-500/20' : 'text-slate-500 hover:text-white hover:bg-white/5'
                                 }`}
                             >
-                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <CheckCircle2 className="w-4 h-4" />
                                 Atur Total
                             </button>
                         </div>
 
-                        <div className="space-y-2">
-                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1">Nominal Saldo (IDR)</label>
-                            <div className="relative">
-                                <div className="absolute left-4 top-1/2 -translate-y-1/2 font-black text-slate-500 tracking-tighter italic">Rp</div>
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Nominal Saldo (IDR)</label>
+                            <div className="relative group">
+                                <div className="absolute left-5 top-1/2 -translate-y-1/2 font-black text-teal-500/50 tracking-tighter italic text-lg">Rp</div>
                                 <input 
                                     type="number"
                                     placeholder="0"
                                     value={balanceAmount}
                                     onChange={(e) => setBalanceAmount(e.target.value)}
-                                    className="w-full bg-white/[0.03] border border-white/5 rounded-2xl pl-12 pr-6 py-4 text-sm font-black text-white focus:ring-0 placeholder:text-white/10"
+                                    className="w-full bg-black/40 border border-white/5 group-hover:border-white/10 focus:border-teal-500/50 rounded-2xl pl-14 pr-6 py-5 text-xl font-black text-white focus:ring-0 placeholder:text-white/5 transition-all outline-none"
                                 />
                             </div>
-                            <p className="text-[8px] text-slate-600 font-bold uppercase tracking-widest ml-1">
-                                {balanceAction === 'add' && "Saldo akan ditambahkan ke jumlah yang sudah ada."}
-                                {balanceAction === 'subtract' && "Saldo akan dikurangi dari jumlah yang sudah ada (Min. 0)."}
-                                {balanceAction === 'set' && "Saldo akan diganti sepenuhnya dengan nilai ini."}
-                            </p>
+                            <div className="flex items-start gap-2 ml-1">
+                                <AlertTriangle className="w-3.5 h-3.5 text-teal-500/40 shrink-0 mt-0.5" />
+                                <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest leading-relaxed">
+                                    {balanceAction === 'add' && "Saldo akan ditambahkan ke jumlah yang sudah ada. Gunakan nominal positif."}
+                                    {balanceAction === 'subtract' && "Saldo akan dikurangi dari jumlah yang sudah ada. Sistem akan memastikan saldo tidak kurang dari Rp 0."}
+                                    {balanceAction === 'set' && "Saldo vendor akan diganti sepenuhnya dengan nilai ini secara permanen."}
+                                </p>
+                            </div>
                         </div>
                     </div>
+
+                    <div className="flex gap-4 pt-4">
+                        <button 
+                            onClick={() => setIsBalanceModalOpen(false)}
+                            className="flex-1 px-8 py-4 bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all border border-white/5"
+                            disabled={updateBalanceMutation.isPending}
+                        >
+                            Batal
+                        </button>
+                        <button 
+                            onClick={handleUpdateBalance}
+                            disabled={updateBalanceMutation.isPending || !balanceAmount}
+                            className="flex-[2] flex items-center justify-center gap-3 px-10 py-4 bg-teal-500 hover:bg-teal-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-2xl shadow-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                        >
+                            {updateBalanceMutation.isPending ? (
+                                <>
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    Memproses...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="w-4 h-4" />
+                                    Simpan Perubahan
+                                </>
+                            )}
+                        </button>
+                    </div>
                 </div>
-            </ConfirmationModal>
+            </Modal>
+
+            {/* DELETE VENDOR MODAL */}
+            <ConfirmationModal
+                isOpen={isDeleteDialogOpen}
+                onClose={() => {
+                    if (!isDeletingVendor) {
+                        setIsDeleteDialogOpen(false);
+                        setVendorToDelete(null);
+                    }
+                }}
+                onConfirm={confirmDeleteVendor}
+                title="Hapus Vendor Permanen?"
+                message={`Apakah Anda yakin ingin menghapus vendor "${vendorToDelete?.name}" secara permanen? Seluruh produk dan data terkait akan ikut terhapus.`}
+                confirmText="Ya, Hapus Permanen"
+                cancelText="Batal"
+                type="danger"
+                isLoading={isDeletingVendor}
+            />
         </div>
     );
 };
