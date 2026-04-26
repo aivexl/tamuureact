@@ -442,10 +442,22 @@ export const shop = {
         return sanitizeValue(data.product);
     },
 
+    async getCarousel() {
+        const res = await safeFetch(`${API_BASE}/api/shop/carousel`);
+        const data = await res.json();
+        return sanitizeValue(data.slides || []);
+    },
+
     async getAds(position?: string) {
         const res = await safeFetch(`${API_BASE}/api/shop/ads?position=${position || ''}`);
         const data = await res.json();
         return sanitizeValue(data.ads || []);
+    },
+
+    async getPopups(placement?: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/popups${placement ? `?placement=${placement}` : ''}`);
+        const data = await res.json();
+        return sanitizeValue(data.popups || []);
     },
 
     async track(vendorId: string, actionType: string, productId?: string) {

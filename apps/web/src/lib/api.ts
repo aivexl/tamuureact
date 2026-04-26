@@ -1309,6 +1309,40 @@ export const shop = {
         return sanitizeValue(data.slides || []);
     },
 
+    async getPopups(placement?: string) {
+        const res = await safeFetch(`${API_BASE}/api/shop/popups${placement ? `?placement=${placement}` : ''}`);
+        const data = await res.json();
+        return sanitizeValue(data.popups || []);
+    },
+
+    async adminGetPopups(token: string) {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/popups`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        return sanitizeValue(data.popups || []);
+    },
+
+    async adminSavePopup(token: string, payload: { action: 'create' | 'update', item: any }) {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/popups`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+        return res.json();
+    },
+
+    async adminDeletePopup(token: string, id: string) {
+        const res = await safeFetch(`${API_BASE}/api/admin/shop/popups/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return res.json();
+    },
+
     async adminGetCarousel(token: string) {
         const res = await safeFetch(`${API_BASE}/api/admin/shop/carousel`, {
             headers: { 'Authorization': `Bearer ${token}` }

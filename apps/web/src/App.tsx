@@ -63,6 +63,7 @@ const GuestWelcomePage = lazy(() => import('./pages/GuestWelcomePage').then(m =>
 
 import { usePushNotifications } from './hooks/usePushNotifications';
 import { useStore } from './store/useStore';
+import { PromoPopup } from './components/PromoPopup';
 
 // ============================================
 // AUTH SYNC COMPONENT (Next.js -> Vite)
@@ -169,6 +170,7 @@ const App: React.FC = () => {
         <BrowserRouter>
             <DomainEnforcer />
             <AuthSync />
+            <PromoPopup />
             <LazyMotion features={domMax} strict>
                 <Suspense fallback={<PremiumLoader />}>
                     <GlobalModal />

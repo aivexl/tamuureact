@@ -2158,6 +2158,26 @@ export default {
             }
 
             // 5c. PUBLIC DISCOVERY: Shop Carousel
+            // 5g. PROMO POPUPS: Get Active Popups
+            if (path === '/api/shop/popups' && method === 'GET') {
+                try {
+                    const placement = url.searchParams.get('placement') || 'all';
+                    let query = 'SELECT * FROM shop_promo_popups WHERE is_active = 1';
+                    let params = [];
+
+                    if (placement !== 'all') {
+                        query += " AND (placements LIKE ? OR placements = 'all')";
+                        params.push(`%${placement}%`);
+                    }
+
+                    query += ' ORDER BY order_index ASC';
+                    const results = await env.DB.prepare(query).bind(...params).all();
+                    return json({ success: true, popups: results.results }, { headers: corsHeaders });
+                } catch (error) {
+                    return json({ error: 'Failed to fetch popups', details: error.message }, { headers: corsHeaders, status: 500 });
+                }
+            }
+
             if (path === '/api/shop/carousel' && method === 'GET') {
                 try {
                     const slides = await env.DB.prepare(`
@@ -2635,6 +2655,37 @@ export default {
                     } catch (error) {
                         return json({ error: 'Purge failed' }, { ...corsHeaders, status: 500 });
                     }
+                }
+
+                // ============================================
+                // ADMIN: PROMO POPUP MANAGEMENT
+                // ============================================
+                if (path === '/api/admin/shop/popups' && method === 'GET') {
+                    const popups = await env.DB.prepare('SELECT * FROM shop_promo_popups ORDER BY order_index ASC').all();
+                    return json({ success: true, popups: popups.results }, corsHeaders);
+                }
+
+                if (path === '/api/admin/shop/popups' && method === 'POST') {
+                    const { action, item } = await request.json();
+                    if (action === 'create') {
+                        const newId = crypto.randomUUID();
+                        await env.DB.prepare(
+                            'INSERT INTO shop_promo_popups (id, image_url, link_url, placements, is_active, order_index) VALUES (?, ?, ?, ?, ?, ?)'
+                        ).bind(newId, item.image_url, item.link_url, item.placements || 'all', item.is_active !== undefined ? item.is_active : 1, item.order_index || 0).run();
+                        return json({ success: true, id: newId }, corsHeaders);
+                    }
+                    if (action === 'update') {
+                        await env.DB.prepare(
+                            'UPDATE shop_promo_popups SET image_url = ?, link_url = ?, placements = ?, is_active = ?, order_index = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+                        ).bind(item.image_url, item.link_url, item.placements, item.is_active, item.order_index, item.id).run();
+                        return json({ success: true }, corsHeaders);
+                    }
+                }
+
+                if (path.startsWith('/api/admin/shop/popups/') && method === 'DELETE') {
+                    const id = path.split('/').pop();
+                    await env.DB.prepare('DELETE FROM shop_promo_popups WHERE id = ?').bind(id).run();
+                    return json({ success: true }, corsHeaders);
                 }
 
                 if (path === '/api/admin/shop/carousel' && method === 'GET') {

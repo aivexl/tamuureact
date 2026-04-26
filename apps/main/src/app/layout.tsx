@@ -7,6 +7,7 @@ import { AuthProvider } from "@/providers/AuthProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { Toaster } from "react-hot-toast";
 import { SmartDomainRedirect } from "@/components/layout/SmartDomainRedirect";
+import { PromoPopup } from "@/components/PromoPopup";
 
 export const metadata: Metadata = {
   title: "Tamuu - Platform Undangan Digital & Vendor Pernikahan Premium",
@@ -69,6 +70,7 @@ export default function RootLayout({
         <QueryProvider>
           <Toaster position="top-center" />
           <AuthProvider>
+            <PromoPopup />
             <SmartDomainRedirect />
             <Suspense fallback={<div className="h-16 bg-white border-b border-slate-100" />}>
               <Navbar />
