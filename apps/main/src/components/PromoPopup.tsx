@@ -22,10 +22,11 @@ export const PromoPopup: React.FC = () => {
             try {
                 const path = pathname;
                 
-                // CRITICAL: Exclude Invitation & Preview Pages (Ads not allowed here)
+                // CRITICAL: Exclude Auth, Invitation & Preview Pages (Ads not allowed here)
+                const isAuth = path.startsWith('/login') || path.startsWith('/signup') || path.startsWith('/forgot-password');
                 const isInvitation = path.startsWith('/v/') || path.startsWith('/preview/') || (path.split('/').length <= 3 && path !== '/' && !['/shop', '/blog', '/admin', '/dashboard', '/profile', '/billing', '/onboarding', '/upgrade', '/guests', '/wishes', '/editor', '/vendor', '/terms', '/privacy', '/about'].some(p => path.startsWith(p)));
                 
-                if (isInvitation && !isDebug) return;
+                if ((isAuth || isInvitation) && !isDebug) return;
 
                 // Determine placement based on path
                 let placement = 'all';
