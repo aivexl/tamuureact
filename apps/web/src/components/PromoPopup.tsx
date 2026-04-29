@@ -34,6 +34,7 @@ export const PromoPopup: React.FC = () => {
                 else if (path.startsWith('/shop')) placement = 'shop';
                 else if (path.startsWith('/admin')) placement = 'admin';
                 else if (path.startsWith('/dashboard')) placement = 'dashboard';
+                else if (path.startsWith('/vendor')) placement = 'vendor';
                 else if (path.startsWith('/v/')) placement = 'user';
 
                 const data = await shop.getPopups(placement);

@@ -310,9 +310,9 @@ export const AdminTemplatesPage: React.FC = () => {
         <AdminLayout>
             <div className="min-h-[calc(100vh-100px)]">
                 {/* Header Action Area */}
-                <div className="flex flex-col md:flex-row items-end md:items-center justify-between gap-6 mb-8">
+                <div className="flex flex-col md:flex-row items-end md:items-center justify-between gap-6 mb-5">
                     <div className="w-full md:w-auto text-center md:text-left">
-                        <div className="flex flex-col md:flex-row items-center gap-3 mb-2">
+                        <div className="flex flex-col md:flex-row items-center gap-3 mb-1">
                             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg ${activeTab === 'invitation' ? 'bg-teal-50 shadow-teal-500/20' : 'bg-purple-50 shadow-purple-500/20'}`}>
                                 {activeTab === 'invitation' ? (
                                     <Smartphone className="w-6 h-6 text-teal-600" />
@@ -354,7 +354,7 @@ export const AdminTemplatesPage: React.FC = () => {
                 </div>
 
                 {activeTab === 'invitation' && (
-                    <div className="flex gap-2 border-b border-white/10 pb-1 mb-8 overflow-x-auto no-scrollbar">
+                    <div className="flex gap-2 border-b border-white/10 pb-1 mb-5 overflow-x-auto no-scrollbar">
                         <button
                             onClick={() => setSubTab('all')}
                             className={`flex items-center gap-2 px-6 py-4 border-b-2 transition-all text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${

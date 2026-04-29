@@ -72,17 +72,12 @@ export const LoginPage: React.FC = () => {
             </AnimatePresence>
 
             <AuthForm mode="login" onSubmit={handleLogin} isLoading={isLoading} />
-            
-            <div className="mt-4 text-center">
-                <span className="text-[10px] text-white/20 font-mono uppercase tracking-[0.2em]">Vite Legacy v2.0.4</span>
-            </div>
 
             <p className="mt-8 text-center text-sm text-white/40 font-medium">
                 Belum punya akun?{' '}
                 <Link to="/signup" className="text-white font-black hover:text-premium-accent transition-colors">
                     Daftar di sini
                 </Link>
-            </p>
-        </AuthLayout>
+            </p>        </AuthLayout>
     );
 };
