@@ -2719,7 +2719,7 @@ export default {
                     
                     // Support both legacy payload and new action-based payload
                     if (payload.action) {
-                        const { action, item } = payload;
+                        const { action, item, items } = payload;
                         if (action === 'create') {
                             const newId = crypto.randomUUID();
                             await env.DB.prepare(
@@ -2733,6 +2733,12 @@ export default {
                             return json({ success: true }, corsHeaders);
                         } else if (action === 'delete') {
                             await env.DB.prepare('DELETE FROM shop_carousel WHERE id = ?').bind(item.id).run();
+                            return json({ success: true }, corsHeaders);
+                        } else if (action === 'reorder' && Array.isArray(items)) {
+                            const queries = items.map(p => 
+                                env.DB.prepare('UPDATE shop_carousel SET order_index = ? WHERE id = ?').bind(p.order_index, p.id)
+                            );
+                            await env.DB.batch(queries);
                             return json({ success: true }, corsHeaders);
                         }
                         return error('Invalid action', 400);
@@ -2761,9 +2767,9 @@ export default {
                 }
 
                 if (path === '/api/admin/invitations/carousel' && method === 'POST') {
-                    const { action, item } = await request.json();
-                    if (!action || !item) return json({ error: 'Action and item required' }, { ...corsHeaders, status: 400 });
-
+                    const payload = await request.json();
+                    const { action, item, items } = payload;
+                    
                     if (action === 'create') {
                         const newId = crypto.randomUUID();
                         await env.DB.prepare(
@@ -2778,8 +2784,14 @@ export default {
                     } else if (action === 'delete') {
                         await env.DB.prepare('DELETE FROM invitations_carousel WHERE id = ?').bind(item.id).run();
                         return json({ success: true }, corsHeaders);
+                    } else if (action === 'reorder' && Array.isArray(items)) {
+                        const queries = items.map(p => 
+                            env.DB.prepare('UPDATE invitations_carousel SET order_index = ? WHERE id = ?').bind(p.order_index, p.id)
+                        );
+                        await env.DB.batch(queries);
+                        return json({ success: true }, corsHeaders);
                     }
-                    return json({ error: 'Invalid action' }, { ...corsHeaders, status: 400 });
+                    return json({ error: 'Invalid action or missing data' }, { ...corsHeaders, status: 400 });
                 }
 
                 // 4c. ADMIN REPORTS: Fetch and manage reports

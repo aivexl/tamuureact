@@ -537,7 +537,7 @@ export const AdminShopSettings: React.FC = () => {
                                                 value={newSlide.link_url}
                                                 onChange={e => setNewSlide({ ...newSlide, link_url: e.target.value })}
                                                 className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-slate-400 text-xs"
-                                                placeholder="/shop/category"
+                                                placeholder="https://tamuu.id/..."
                                             />
                                         </div>
                                         <div>
@@ -661,7 +661,7 @@ export const AdminShopSettings: React.FC = () => {
                                                 value={newPopup.link_url}
                                                 onChange={e => setNewPopup({ ...newPopup, link_url: e.target.value })}
                                                 className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-slate-400 text-xs"
-                                                placeholder="https://tamuu.id atau /shop/..."
+                                                placeholder="https://... atau /shop/..."
                                             />
                                         </div>
                                         <div>

@@ -90,7 +90,15 @@ export const MultiCarousel = ({ items }: MultiCarouselProps) => {
                         >
                             <div 
                                 className="w-full aspect-[21/9] lg:aspect-[24/7] xl:aspect-[28/8] rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden bg-white cursor-pointer border border-slate-200 relative"
-                                onClick={() => item.link_url && (window.location.href = item.link_url)}
+                                onClick={() => {
+                                    if (item.link_url) {
+                                        if (item.link_url.startsWith('http')) {
+                                            window.open(item.link_url, '_blank', 'noopener,noreferrer');
+                                        } else {
+                                            window.location.href = item.link_url;
+                                        }
+                                    }
+                                }}
                             >
                                 <Image 
                                     src={displayImage} 

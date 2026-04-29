@@ -443,7 +443,7 @@ export const AdminBlogListPage = () => {
                             value={newSlide.link_url}
                             onChange={e => setNewSlide({ ...newSlide, link_url: e.target.value })}
                             className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-slate-400 text-sm"
-                            placeholder="/blog/judul-artikel"
+                            placeholder="https://tamuu.id/blog/..."
                         />
                     </div>
                     <div>

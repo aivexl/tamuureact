@@ -89,7 +89,15 @@ export const MultiCarousel = React.memo(({ items }: MultiCarouselProps) => {
                                 // Extreme Cinematic Ratio to reduce height by ~30%
                                 // Desktop: roughly 24:7 (super wide), Mobile: 21:9 (wider than standard 16:9)
                                 className="w-full aspect-[21/9] lg:aspect-[24/7] xl:aspect-[28/8] rounded-[1.5rem] md:rounded-[2.5rem] overflow-hidden bg-slate-100 cursor-pointer border border-slate-200"
-                                onClick={() => item.link_url && (window.location.href = item.link_url)}
+                                onClick={() => {
+                                    if (item.link_url) {
+                                        if (item.link_url.startsWith('http')) {
+                                            window.open(item.link_url, '_blank', 'noopener,noreferrer');
+                                        } else {
+                                            window.location.href = item.link_url;
+                                        }
+                                    }
+                                }}
                             >
                                 {/* Static image, no zoom effects to maintain silent elegance */}
                                 <img src={item.image_url} alt={`Carousel ${idx}`} className="w-full h-full object-cover" />
