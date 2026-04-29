@@ -305,7 +305,7 @@ export const BillingPage: React.FC = () => {
   return (
     <>
       <div className="min-h-screen bg-[#F8FAFC] pt-[140px] md:pt-[130px] pb-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <div className="mb-10">
             <h1 className="text-3xl font-black text-[#0A1128] mb-2">
               Tagihan & Langganan
