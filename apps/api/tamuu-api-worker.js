@@ -2673,14 +2673,14 @@ export default {
                     if (action === 'create') {
                         const newId = crypto.randomUUID();
                         await env.DB.prepare(
-                            'INSERT INTO shop_promo_popups (id, image_url, link_url, placements, is_active, order_index) VALUES (?, ?, ?, ?, ?, ?)'
-                        ).bind(newId, item.image_url, item.link_url, item.placements || 'all', item.is_active !== undefined ? item.is_active : 1, item.order_index || 0).run();
+                            'INSERT INTO shop_promo_popups (id, image_url, link_url, placements, tiers, is_active, order_index) VALUES (?, ?, ?, ?, ?, ?, ?)'
+                        ).bind(newId, item.image_url, item.link_url, item.placements || 'all', item.tiers || 'all', item.is_active !== undefined ? item.is_active : 1, item.order_index || 0).run();
                         return json({ success: true, id: newId }, corsHeaders);
                     }
                     if (action === 'update') {
                         await env.DB.prepare(
-                            'UPDATE shop_promo_popups SET image_url = ?, link_url = ?, placements = ?, is_active = ?, order_index = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
-                        ).bind(item.image_url, item.link_url, item.placements, item.is_active, item.order_index, item.id).run();
+                            'UPDATE shop_promo_popups SET image_url = ?, link_url = ?, placements = ?, tiers = ?, is_active = ?, order_index = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+                        ).bind(item.image_url, item.link_url, item.placements, item.tiers, item.is_active, item.order_index, item.id).run();
                         return json({ success: true }, corsHeaders);
                     }
                 }

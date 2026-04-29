@@ -38,9 +38,20 @@ export const PromoPopup: React.FC = () => {
 
                 const data = await shop.getPopups(placement);
                 if (data && data.length > 0) {
-                    setPopups(data);
-                    // Reduced delay for better UX
-                    setTimeout(() => setIsVisible(true), 500);
+                    // TIER FILTERING: Enterprise Hardening
+                    // For Landing Page, we assume visitors are 'free' unless we add auth sync here later
+                    const userTier = 'free'; 
+                    const filtered = data.filter((popup: any) => {
+                        if (!popup.tiers || popup.tiers === 'all') return true;
+                        const allowedTiers = popup.tiers.split(',').map((t: string) => t.trim().toLowerCase());
+                        return allowedTiers.includes(userTier.toLowerCase()) || allowedTiers.includes('all');
+                    });
+
+                    if (filtered.length > 0) {
+                        setPopups(filtered);
+                        // Reduced delay for better UX
+                        setTimeout(() => setIsVisible(true), 500);
+                    }
                 }
             } catch (error) {
                 console.error('Failed to fetch promo popups', error);

@@ -3,12 +3,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { shop } from '../lib/api';
 import { useLocation } from 'react-router-dom';
+import { useStore } from '../store/useStore';
 
 export const PromoPopup: React.FC = () => {
     const [popups, setPopups] = useState<any[]>([]);
     const [isVisible, setIsVisible] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const location = useLocation();
+    const { user } = useStore();
 
     useEffect(() => {
         const queryParams = new URLSearchParams(window.location.search);
@@ -36,9 +38,19 @@ export const PromoPopup: React.FC = () => {
 
                 const data = await shop.getPopups(placement);
                 if (data && data.length > 0) {
-                    setPopups(data);
-                    // Reduced delay for better UX
-                    setTimeout(() => setIsVisible(true), 500);
+                    // TIER FILTERING: Enterprise Hardening
+                    const userTier = user?.tier || 'free';
+                    const filtered = data.filter((popup: any) => {
+                        if (!popup.tiers || popup.tiers === 'all') return true;
+                        const allowedTiers = popup.tiers.split(',').map((t: string) => t.trim().toLowerCase());
+                        return allowedTiers.includes(userTier.toLowerCase()) || allowedTiers.includes('all');
+                    });
+
+                    if (filtered.length > 0) {
+                        setPopups(filtered);
+                        // Reduced delay for better UX
+                        setTimeout(() => setIsVisible(true), 500);
+                    }
                 }
             } catch (error) {
                 console.error('Failed to fetch promo popups', error);
@@ -46,7 +58,7 @@ export const PromoPopup: React.FC = () => {
         };
 
         fetchPopups();
-    }, [location.pathname, window.location.search]);
+    }, [location.pathname, window.location.search, user?.tier]);
 
     const handleClose = () => {
         setIsVisible(false);

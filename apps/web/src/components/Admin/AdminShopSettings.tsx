@@ -612,19 +612,67 @@ export const AdminShopSettings: React.FC = () => {
                                             />
                                         </div>
                                         <div>
-                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Penempatan (Placements)</label>
-                                            <select 
-                                                value={newPopup.placements}
-                                                onChange={e => setNewPopup({ ...newPopup, placements: e.target.value })}
-                                                className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-4 py-3 text-white text-xs appearance-none"
-                                            >
-                                                <option value="all">Seluruh Halaman Utama</option>
-                                                <option value="homepage">Beranda Utama (Homepage)</option>
-                                                <option value="shop">Direktori Belanja (Shop)</option>
-                                                <option value="dashboard">Dashboard Pengguna</option>
-                                                <option value="admin">Panel Admin</option>
-                                            </select>
-                                            <p className="text-[8px] text-slate-600 font-bold uppercase tracking-widest mt-1.5 italic">Pilih area di mana popup ini akan ditampilkan. Halaman undangan user otomatis dikecualikan.</p>
+                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 block">Penempatan Halaman (Multiple)</label>
+                                            <div className="grid grid-cols-2 gap-2 mb-2">
+                                                {[
+                                                    { id: 'homepage', label: 'Homepage' },
+                                                    { id: 'shop', label: 'Shop' },
+                                                    { id: 'dashboard', label: 'Dashboard' },
+                                                    { id: 'admin', label: 'Admin' }
+                                                ].map(page => (
+                                                    <label key={page.id} className="flex items-center gap-2 bg-[#0A0A0A] border border-white/5 rounded-xl px-3 py-2 cursor-pointer hover:border-white/10 transition-colors">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={newPopup.placements === 'all' || newPopup.placements.split(',').includes(page.id)}
+                                                            onChange={e => {
+                                                                let current = newPopup.placements === 'all' ? ['homepage', 'shop', 'dashboard', 'admin'] : newPopup.placements.split(',').filter(p => p !== '');
+                                                                if (e.target.checked) {
+                                                                    if (!current.includes(page.id)) current.push(page.id);
+                                                                } else {
+                                                                    current = current.filter(p => p !== page.id);
+                                                                }
+                                                                const newVal = current.length === 4 ? 'all' : (current.length === 0 ? '' : current.join(','));
+                                                                setNewPopup({ ...newPopup, placements: newVal });
+                                                            }}
+                                                            className="w-3 h-3 rounded bg-black border-white/10 text-[#FFBF00] focus:ring-offset-0 focus:ring-0"
+                                                        />
+                                                        <span className="text-[10px] text-slate-400 font-bold uppercase">{page.label}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                            <p className="text-[8px] text-slate-600 font-bold uppercase tracking-widest italic">Pilih satu atau lebih halaman untuk menampilkan popup.</p>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 block">Target Tier Pengguna (Multiple)</label>
+                                            <div className="grid grid-cols-2 gap-2 mb-2">
+                                                {[
+                                                    { id: 'free', label: 'Free' },
+                                                    { id: 'pro', label: 'Pro' },
+                                                    { id: 'ultimate', label: 'Ultimate' },
+                                                    { id: 'elite', label: 'Elite' }
+                                                ].map(tier => (
+                                                    <label key={tier.id} className="flex items-center gap-2 bg-[#0A0A0A] border border-white/5 rounded-xl px-3 py-2 cursor-pointer hover:border-white/10 transition-colors">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            checked={newPopup.tiers === 'all' || (newPopup.tiers || '').split(',').includes(tier.id)}
+                                                            onChange={e => {
+                                                                let current = (newPopup.tiers === 'all' || !newPopup.tiers) ? ['free', 'pro', 'ultimate', 'elite'] : newPopup.tiers.split(',').filter(t => t !== '');
+                                                                if (e.target.checked) {
+                                                                    if (!current.includes(tier.id)) current.push(tier.id);
+                                                                } else {
+                                                                    current = current.filter(t => t !== tier.id);
+                                                                }
+                                                                const newVal = current.length === 4 ? 'all' : (current.length === 0 ? '' : current.join(','));
+                                                                setNewPopup({ ...newPopup, tiers: newVal });
+                                                            }}
+                                                            className="w-3 h-3 rounded bg-black border-white/10 text-[#FFBF00] focus:ring-offset-0 focus:ring-0"
+                                                        />
+                                                        <span className="text-[10px] text-slate-400 font-bold uppercase">{tier.label}</span>
+                                                    </label>
+                                                ))}
+                                            </div>
+                                            <p className="text-[8px] text-slate-600 font-bold uppercase tracking-widest italic">Popup hanya akan muncul untuk user dengan tier yang dipilih.</p>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="hidden">
