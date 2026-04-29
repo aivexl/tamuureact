@@ -21,6 +21,7 @@ import { useStore } from '../../store/useStore';
 import { toast } from 'react-hot-toast';
 import api from '@/lib/api';
 import { getPublicDomain } from '@/lib/utils';
+import { compressImageToFile, shouldCompress } from '../../lib/image-compress';
 
 export interface BlogPost {
     id: string;
@@ -64,7 +65,20 @@ export const AdminBlogListPage = () => {
 
         setIsUploading(true);
         try {
-            const result = await api.storage.upload(file, 'gallery');
+            // OPTIMIZATION: Enterprise Image Compression
+            let fileToUpload = file;
+            if (shouldCompress(file)) {
+                toast.loading('Optimizing image...', { id: 'img-opt' });
+                try {
+                    fileToUpload = await compressImageToFile(file, { quality: 0.8, maxWidth: 1600 });
+                    toast.success('Image optimized!', { id: 'img-opt' });
+                } catch (err) {
+                    console.warn('Compression failed, using original', err);
+                    toast.dismiss('img-opt');
+                }
+            }
+
+            const result = await api.storage.upload(fileToUpload, 'gallery');
             if (result.url) {
                 setNewSlide(prev => ({ ...prev, image_url: result.url }));
                 toast.success('Image uploaded successfully');

@@ -153,11 +153,11 @@ export async function compressImageToFile(
 
 /**
  * Check if file should be compressed
- * Only compress images larger than 500KB (excluding GIFs)
+ * Only compress images larger than 100KB (excluding GIFs)
  */
 export function shouldCompress(file: File): boolean {
     const isImage = file.type.startsWith('image/');
-    const isLarge = file.size > 500 * 1024; // 500KB threshold
+    const isLarge = file.size > 100 * 1024; // 100KB threshold (was 500KB)
     const isNotGif = file.type !== 'image/gif'; // Don't compress GIFs (animation)
 
     return isImage && isLarge && isNotGif;

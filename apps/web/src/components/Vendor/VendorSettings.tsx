@@ -100,7 +100,21 @@ export const VendorSettings: React.FC = () => {
         if (!file) return;
         try {
             setIsUploading(true);
-            const res = await api.storage.upload(file, 'gallery');
+
+            // OPTIMIZATION: Enterprise Image Compression
+            let fileToUpload = file;
+            if (shouldCompress(file)) {
+                toast.loading('Optimizing image...', { id: 'img-opt' });
+                try {
+                    fileToUpload = await compressImageToFile(file, { quality: 0.8, maxWidth: type === 'banner' ? 1920 : 800 });
+                    toast.success('Image optimized!', { id: 'img-opt' });
+                } catch (err) {
+                    console.warn('Compression failed, using original', err);
+                    toast.dismiss('img-opt');
+                }
+            }
+
+            const res = await api.storage.upload(fileToUpload, 'gallery');
             if (res?.url) {
                 if (type === 'banner') setBannerUrl(res.url);
                 else setLogoUrl(res.url);

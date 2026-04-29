@@ -39,6 +39,7 @@ import { ConfirmationModal } from '../Modals/ConfirmationModal';
 import api, { shopCategories, type ShopCategory } from '../../lib/api';
 import { useQuery } from '@tanstack/react-query';
 import { ShopIcon } from '@tamuu/ui';
+import { compressImageToFile, shouldCompress } from '../../lib/image-compress';
 
 // Custom Icons for Tiktok & X
 const TiktokIcon = ({ className }: { className?: string }) => (
@@ -478,7 +479,21 @@ const ProductForm: React.FC<{ product?: any, allProducts: any[], onSave: (data: 
 
         try {
             setIsProductUploading(true);
-            const res = await api.storage.upload(file, 'gallery');
+            
+            // OPTIMIZATION: Enterprise Image Compression
+            let fileToUpload = file;
+            if (shouldCompress(file)) {
+                toast.loading('Optimizing image...', { id: 'img-opt' });
+                try {
+                    fileToUpload = await compressImageToFile(file, { quality: 0.8, maxWidth: 1600 });
+                    toast.success('Image optimized!', { id: 'img-opt' });
+                } catch (err) {
+                    console.warn('Compression failed, using original', err);
+                    toast.dismiss('img-opt');
+                }
+            }
+
+            const res = await api.storage.upload(fileToUpload, 'gallery');
             if (res && res.url) {
                 setFormData(prev => ({ ...prev, images: [...prev.images, res.url] }));
             }
