@@ -384,11 +384,6 @@ export const BillingPage: React.FC = () => {
                       ? "Upgrade Paket"
                       : "Kelola Langganan"}
                   </Link>
-                  {user?.tier !== "free" && (
-                    <button className="text-slate-400 font-bold text-sm hover:text-rose-500 transition-colors">
-                      Batalkan Paket
-                    </button>
-                  )}
                 </div>
               </div>
               {/* Abstract Background */}
