@@ -14,12 +14,15 @@ import {
     Image as ImageIcon,
     LayoutTemplate,
     UploadCloud,
-    Globe
+    Globe,
+    ArrowUp,
+    ArrowDown
 } from 'lucide-react';
 import { AdminLayout } from '../components/Layout/AdminLayout';
 import { PremiumLoader } from '../components/ui/PremiumLoader';
 import { useStore } from '@/store/useStore';
 import { toast } from 'react-hot-toast';
+import { compressImageToFile, shouldCompress } from '@/lib/image-compress';
 
 interface Template {
     id: string;
@@ -53,7 +56,12 @@ export const AdminTemplatesPage: React.FC = () => {
     const [loadingCarousel, setLoadingCarousel] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [newSlide, setNewSlide] = useState({ image_url: '', link_url: '', alt_text: '', is_active: 1, order_index: 0 });
+    const [newSlide, setNewSlide] = useState({ image_url: '', link_url: '', alt_text: '', is_active: 1, order_index: 1 });
+
+    // Update order_index when carouselSlides changes
+    useEffect(() => {
+        setNewSlide(prev => ({ ...prev, order_index: carouselSlides.length + 1 }));
+    }, [carouselSlides.length]);
 
     // Initial Fetch
     useEffect(() => {
@@ -99,7 +107,20 @@ export const AdminTemplatesPage: React.FC = () => {
 
         setIsUploading(true);
         try {
-            const result = await storage.upload(file, 'gallery');
+            // OPTIMIZATION: Enterprise Image Compression
+            let fileToUpload = file;
+            if (shouldCompress(file)) {
+                toast.loading('Optimizing image...', { id: 'img-opt' });
+                try {
+                    fileToUpload = await compressImageToFile(file, { quality: 0.8, maxWidth: 1600 });
+                    toast.success('Image optimized!', { id: 'img-opt' });
+                } catch (err) {
+                    console.warn('Compression failed, using original', err);
+                    toast.dismiss('img-opt');
+                }
+            }
+
+            const result = await storage.upload(fileToUpload, 'gallery');
             if (result.url) {
                 setNewSlide(prev => ({ ...prev, image_url: result.url }));
                 toast.success('Image uploaded successfully');
@@ -192,6 +213,37 @@ export const AdminTemplatesPage: React.FC = () => {
         }
     };
 
+    const handleMoveCarouselSlide = async (index: number, direction: 'up' | 'down') => {
+        const newSlides = [...carouselSlides];
+        const targetIndex = direction === 'up' ? index - 1 : index + 1;
+        
+        if (targetIndex < 0 || targetIndex >= newSlides.length) return;
+
+        // Swap
+        [newSlides[index], newSlides[targetIndex]] = [newSlides[targetIndex], newSlides[index]];
+
+        // Update order indices (1-based)
+        const reorderPayload = newSlides.map((s, idx) => ({
+            id: s.id,
+            order_index: idx + 1
+        }));
+
+        // Optimistic UI update
+        setCarouselSlides(newSlides.map((s, idx) => ({ ...s, order_index: idx + 1 })));
+
+        try {
+            await safeFetch(`${API_BASE}/api/admin/invitations/carousel`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'reorder', items: reorderPayload })
+            });
+            toast.success('Urutan slide diperbarui');
+        } catch (error) {
+            toast.error('Gagal memperbarui urutan');
+            fetchCarousel(); // Rollback
+        }
+    };
+
     // Filter Logic
     const filteredTemplates = templates.filter(t =>
         (t.type || 'invitation') === activeTab &&
@@ -200,38 +252,36 @@ export const AdminTemplatesPage: React.FC = () => {
 
     const renderCarouselTab = () => (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-1 bg-white/[0.02] border border-white/5 rounded-3xl p-8 h-fit">
+            <div className="lg:col-span-1 bg-white/[0.02] border border-white/5 rounded-3xl p-6 h-fit">
                 <h3 className="text-lg font-black text-white mb-6 uppercase tracking-widest">Tambah Slide</h3>
                 <div className="space-y-4">
+                    <div className="aspect-video rounded-xl overflow-hidden bg-black border border-white/5 relative group mb-2">
+                        {newSlide.image_url ? (
+                            <img src={newSlide.image_url} alt="Preview" className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center text-slate-700">
+                                <ImageIcon className="w-8 h-8 mb-2" />
+                                <span className="text-[10px] font-black uppercase tracking-widest text-center px-4">Upload Banner Preview</span>
+                            </div>
+                        )}
+                        <button 
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={isUploading}
+                            className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2 text-white"
+                        >
+                            <UploadCloud className="w-6 h-6" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">{isUploading ? 'Uploading...' : 'Upload Image'}</span>
+                        </button>
+                    </div>
+                    <input 
+                        type="file" 
+                        ref={fileInputRef} 
+                        className="hidden" 
+                        accept="image/*"
+                        onChange={handleFileChange}
+                    />
                     <div>
-                        <div className="flex justify-between items-center mb-2">
-                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block">Image URL (Wajib)</label>
-                            <button 
-                                onClick={() => fileInputRef.current?.click()}
-                                disabled={isUploading}
-                                className="text-[10px] font-black text-teal-500 hover:text-teal-400 uppercase tracking-widest flex items-center gap-1 transition-colors"
-                            >
-                                {isUploading ? (
-                                    <span className="flex items-center gap-1">
-                                        <div className="w-2 h-2 border border-teal-500 border-t-transparent rounded-full animate-spin" />
-                                        Uploading...
-                                    </span>
-                                ) : (
-                                    <span className="flex items-center gap-1">
-                                        <UploadCloud className="w-3 h-3" />
-                                        Upload
-                                    </span>
-                                )}
-                            </button>
-                            <input 
-                                type="file" 
-                                ref={fileInputRef} 
-                                className="hidden" 
-                                accept="image/*"
-                                onChange={handleFileChange}
-                            />
-                        </div>
-                        <p className="text-[8px] text-slate-600 font-bold uppercase tracking-tighter mb-2 ml-1">Ideal: 1200x675px (16:9) | Max: 2MB</p>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest block mb-1.5">Manual URL (Optional)</label>
                         <input 
                             type="text" 
                             value={newSlide.image_url}
@@ -263,22 +313,21 @@ export const AdminTemplatesPage: React.FC = () => {
                         />
                     </div>
                     <div>
-                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Urutan</label>
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 block">Urutan (Auto-Increment)</label>
                         <input 
                             type="number" 
                             value={newSlide.order_index}
-                            onChange={e => setNewSlide({ ...newSlide, order_index: parseInt(e.target.value) || 0 })}
-                            className="w-full bg-[#111] border border-white/10 rounded-xl px-4 py-3 text-white text-sm"
+                            readOnly
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-slate-500 text-sm font-bold"
                         />
                     </div>
                     <button 
-                        disabled={isUploading}
+                        disabled={isUploading || !newSlide.image_url}
                         onClick={() => {
-                            if (!newSlide.image_url) return toast.error('Image URL wajib diisi');
                             handleSaveCarousel(newSlide, 'create');
-                            setNewSlide({ image_url: '', link_url: '', alt_text: '', is_active: 1, order_index: carouselSlides.length + 1 });
+                            setNewSlide({ image_url: '', link_url: '', alt_text: '', is_active: 1, order_index: carouselSlides.length + 2 });
                         }} 
-                        className="w-full py-4 bg-teal-500 text-slate-900 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-teal-400 transition-colors mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full py-4 bg-teal-500 text-slate-900 rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-teal-400 transition-colors mt-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {isUploading ? 'Menunggu Upload...' : 'Tambah Slide'}
                     </button>
@@ -296,6 +345,9 @@ export const AdminTemplatesPage: React.FC = () => {
                     <InvitationCarouselRow 
                         key={slide.id || idx} 
                         slide={slide} 
+                        index={idx}
+                        totalSlides={carouselSlides.length}
+                        onMove={handleMoveCarouselSlide}
                         onSave={(item) => handleSaveCarousel(item, 'update')}
                         onDelete={(item) => {
                             if (window.confirm('Hapus slide ini?')) handleSaveCarousel(item, 'delete');
@@ -509,9 +561,21 @@ export const AdminTemplatesPage: React.FC = () => {
     );
 };
 
-const InvitationCarouselRow: React.FC<{ slide: any, onSave: (slide: any) => void, onDelete: (slide: any) => void }> = ({ slide, onSave, onDelete }) => {
+const InvitationCarouselRow: React.FC<{ 
+    slide: any, 
+    index: number,
+    totalSlides: number,
+    onMove: (idx: number, dir: 'up' | 'down') => void,
+    onSave: (slide: any) => void, 
+    onDelete: (slide: any) => void 
+}> = ({ slide, index, totalSlides, onMove, onSave, onDelete }) => {
     const [localSlide, setLocalSlide] = useState(slide);
     const [hasChanges, setHasChanges] = useState(false);
+
+    useEffect(() => {
+        setLocalSlide(slide);
+        setHasChanges(false);
+    }, [slide]);
 
     const updateField = (field: string, value: any) => {
         setLocalSlide({ ...localSlide, [field]: value });
@@ -520,7 +584,7 @@ const InvitationCarouselRow: React.FC<{ slide: any, onSave: (slide: any) => void
 
     return (
         <div className="bg-[#111] border border-white/5 rounded-3xl p-4 flex flex-col sm:flex-row items-center gap-6 group">
-            <div className="w-full sm:w-48 aspect-video rounded-2xl overflow-hidden bg-slate-800 shrink-0">
+            <div className="w-full sm:w-48 aspect-video rounded-2xl overflow-hidden bg-slate-800 shrink-0 border border-white/5">
                 <img src={localSlide.image_url} alt="Slide" className="w-full h-full object-cover" />
             </div>
             <div className="flex-1 w-full space-y-3">
@@ -548,13 +612,8 @@ const InvitationCarouselRow: React.FC<{ slide: any, onSave: (slide: any) => void
                 </div>
                 <div className="flex items-center gap-4 text-[10px] text-slate-500 font-mono">
                     <div className="flex items-center gap-2">
-                        <span className="uppercase tracking-widest text-[8px] font-black text-slate-600">Order:</span>
-                        <input 
-                            type="number" 
-                            value={localSlide.order_index}
-                            onChange={e => updateField('order_index', parseInt(e.target.value) || 0)}
-                            className="w-12 bg-transparent border-b border-white/10 text-white text-center"
-                        />
+                        <span className="uppercase tracking-widest text-[8px] font-black text-slate-600">Urutan (Auto):</span>
+                        <span className="text-white font-bold">{index + 1}</span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="uppercase tracking-widest text-[8px] font-black text-slate-600">Status:</span>
@@ -568,6 +627,22 @@ const InvitationCarouselRow: React.FC<{ slide: any, onSave: (slide: any) => void
                 </div>
             </div>
             <div className="flex sm:flex-col gap-2 shrink-0 w-full sm:w-auto mt-4 sm:mt-0">
+                <div className="flex gap-1 mb-1 justify-center sm:justify-start">
+                    <button 
+                        onClick={() => onMove(index, 'up')}
+                        disabled={index === 0}
+                        className={`p-1.5 rounded bg-white/5 hover:bg-white/10 transition-colors ${index === 0 ? 'opacity-20 cursor-not-allowed' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        <ArrowUp className="w-4 h-4" />
+                    </button>
+                    <button 
+                        onClick={() => onMove(index, 'down')}
+                        disabled={index === totalSlides - 1}
+                        className={`p-1.5 rounded bg-white/5 hover:bg-white/10 transition-colors ${index === totalSlides - 1 ? 'opacity-20 cursor-not-allowed' : 'text-slate-400 hover:text-white'}`}
+                    >
+                        <ArrowDown className="w-4 h-4" />
+                    </button>
+                </div>
                 <button 
                     onClick={() => {
                         onSave(localSlide);
