@@ -21,6 +21,20 @@ if (import.meta.env.PROD) {
     };
 }
 
+// ASSET RECOVERY: Handle chunk load failures (Vite hashed assets missing after new deploy)
+window.addEventListener('vite:preloadError', (event) => {
+    console.warn('[Tamuu Recovery] Asset load failed, force reloading...');
+    window.location.reload();
+});
+
+// Generic Global Error Handler for Script Loading
+window.addEventListener('error', (e) => {
+    if (e.target && (e.target as any).tagName === 'SCRIPT' && (e.target as any).src.includes('/assets/')) {
+        console.warn('[Tamuu Recovery] Script failed to load:', (e.target as any).src);
+        window.location.reload();
+    }
+}, true);
+
 // REGISTER SERVICE WORKER (Enterprise Push Notification Phase 2.3)
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {

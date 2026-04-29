@@ -1,11 +1,9 @@
-# SPA Routing Rules for Tamuu
-# This file ensures that Cloudflare Pages serves the index.html for all sub-paths.
+# SPA Routing Rules for Tamuu (Improved for Asset Security)
+# Ensures that missing assets return 404 instead of index.html (fixing SyntaxError: Unexpected token <)
 
-# 1. CATCH-ALL SPA RULE (MUST BE FIRST)
+# 1. ASSET GUARD (Prevent JS/CSS 404s from returning HTML index)
+/assets/*  /assets/:splat  404
+/images/*  /images/:splat  404
+
+# 2. SPA CATCH-ALL
 /*  /index.html  200
-
-# 2. PROXIED ROUTES (Explicit for clarity)
-/invitations  /index.html  200
-/dashboard    /index.html  200
-/upgrade      /index.html  200
-/admin/*      /admin/:splat 200
