@@ -2758,42 +2758,6 @@ export default {
                     return json({ success: true }, corsHeaders);
                 }
 
-                // ============================================
-                // ADMIN: INVITATIONS CAROUSEL MANAGEMENT
-                // ============================================
-                if (path === '/api/admin/invitations/carousel' && method === 'GET') {
-                    const slides = await env.DB.prepare('SELECT * FROM invitations_carousel ORDER BY order_index ASC').all();
-                    return json({ success: true, slides: slides.results }, corsHeaders);
-                }
-
-                if (path === '/api/admin/invitations/carousel' && method === 'POST') {
-                    const payload = await request.json();
-                    const { action, item, items } = payload;
-                    
-                    if (action === 'create') {
-                        const newId = crypto.randomUUID();
-                        await env.DB.prepare(
-                            'INSERT INTO invitations_carousel (id, image_url, link_url, order_index, is_active, alt_text) VALUES (?, ?, ?, ?, ?, ?)'
-                        ).bind(newId, item.image_url, item.link_url || null, item.order_index || 0, item.is_active !== undefined ? item.is_active : 1, item.alt_text || null).run();
-                        return json({ success: true, id: newId }, corsHeaders);
-                    } else if (action === 'update') {
-                        await env.DB.prepare(
-                            'UPDATE invitations_carousel SET image_url = ?, link_url = ?, order_index = ?, is_active = ?, alt_text = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
-                        ).bind(item.image_url, item.link_url, item.order_index, item.is_active, item.alt_text || null, item.id).run();
-                        return json({ success: true }, corsHeaders);
-                    } else if (action === 'delete') {
-                        await env.DB.prepare('DELETE FROM invitations_carousel WHERE id = ?').bind(item.id).run();
-                        return json({ success: true }, corsHeaders);
-                    } else if (action === 'reorder' && Array.isArray(items)) {
-                        const queries = items.map(p => 
-                            env.DB.prepare('UPDATE invitations_carousel SET order_index = ? WHERE id = ?').bind(p.order_index, p.id)
-                        );
-                        await env.DB.batch(queries);
-                        return json({ success: true }, corsHeaders);
-                    }
-                    return json({ error: 'Invalid action or missing data' }, { ...corsHeaders, status: 400 });
-                }
-
                 // 4c. ADMIN REPORTS: Fetch and manage reports
                 if (path === '/api/admin/shop/reports' && method === 'GET') {
                     try {
@@ -4329,13 +4293,124 @@ CONTEXT:
                 return json(results, { ...corsHeaders, 'Cache-Control': 'public, max-age=3600' });
             }
 
-            // ADMIN: List Posts
+            // ============================================
+            // INVITATIONS CAROUSEL ADMIN (v1.0)
+            // ============================================
+            if (path.startsWith('/api/admin/invitations/')) {
+                const adminCheck = await verifyAdmin(request, env, ctx);
+                if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
+
+                // 1. Get Invitations Carousel (Admin - sees all)
+                if (path === '/api/admin/invitations/carousel' && method === 'GET') {
+                    try {
+                        const { results } = await env.DB.prepare(
+                            'SELECT * FROM invitations_carousel ORDER BY order_index ASC'
+                        ).all();
+                        return json({ success: true, slides: results }, corsHeaders);
+                    } catch (err) {
+                        return json({ error: 'Failed to fetch invitations carousel' }, { ...corsHeaders, status: 500 });
+                    }
+                }
+
+                // 2. Manage Invitations Carousel
+                if (path === '/api/admin/invitations/carousel' && method === 'POST') {
+                    try {
+                        const payload = await request.json();
+                        const { action, item, items } = payload;
+                        
+                        if (action === 'create') {
+                            const newId = crypto.randomUUID();
+                            await env.DB.prepare(
+                                'INSERT INTO invitations_carousel (id, image_url, link_url, order_index, is_active, alt_text) VALUES (?, ?, ?, ?, ?, ?)'
+                            ).bind(newId, item.image_url, item.link_url, item.order_index || 0, item.is_active !== undefined ? item.is_active : 1, item.alt_text || null).run();
+                            return json({ success: true, id: newId }, corsHeaders);
+                        } else if (action === 'update') {
+                            await env.DB.prepare(
+                                'UPDATE invitations_carousel SET image_url = ?, link_url = ?, order_index = ?, is_active = ?, alt_text = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+                            ).bind(item.image_url, item.link_url, item.order_index, item.is_active, item.alt_text || null, item.id).run();
+                            return json({ success: true }, corsHeaders);
+                        } else if (action === 'delete') {
+                            await env.DB.prepare('DELETE FROM invitations_carousel WHERE id = ?').bind(item.id).run();
+                            return json({ success: true }, corsHeaders);
+                        } else if (action === 'reorder' && Array.isArray(items)) {
+                            const queries = items.map(p => 
+                                env.DB.prepare('UPDATE invitations_carousel SET order_index = ? WHERE id = ?').bind(p.order_index, p.id)
+                            );
+                            await env.DB.batch(queries);
+                            return json({ success: true }, corsHeaders);
+                        }
+                        
+                        return json({ error: 'Invalid action' }, { ...corsHeaders, status: 400 });
+                    } catch (err) {
+                        return json({ error: 'Invitations carousel operation failed', details: err.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
+            }
+
+            // PUBLIC: Blog Carousel
+            if (path === '/api/blog/carousel' && method === 'GET') {
+                try {
+                    const { results } = await env.DB.prepare(
+                        'SELECT * FROM blog_carousel WHERE is_active = 1 ORDER BY order_index ASC'
+                    ).all();
+                    return json(results, corsHeaders);
+                } catch (err) {
+                    return json({ error: 'Failed to fetch blog carousel' }, { ...corsHeaders, status: 500 });
+                }
+            }
+
             // ============================================
             // BLOG ADMIN ENDPOINTS
             // ============================================
             if (path.startsWith('/api/admin/blog/')) {
                 const adminCheck = await verifyAdmin(request, env, ctx);
                 if (!adminCheck.isAdmin) return json({ error: 'Unauthorized' }, { ...corsHeaders, status: 403 });
+
+                // ADMIN: Get Blog Carousel
+                if (path === '/api/admin/blog/carousel' && method === 'GET') {
+                    try {
+                        const { results } = await env.DB.prepare(
+                            'SELECT * FROM blog_carousel ORDER BY order_index ASC'
+                        ).all();
+                        return json(results, corsHeaders);
+                    } catch (err) {
+                        return json({ error: 'Failed to fetch blog carousel' }, { ...corsHeaders, status: 500 });
+                    }
+                }
+
+                // ADMIN: Manage Blog Carousel
+                if (path === '/api/admin/blog/carousel' && method === 'POST') {
+                    try {
+                        const payload = await request.json();
+                        const { action, item, items } = payload;
+                        
+                        if (action === 'create') {
+                            const newId = crypto.randomUUID();
+                            await env.DB.prepare(
+                                'INSERT INTO blog_carousel (id, image_url, link_url, title, category_label, order_index, is_active) VALUES (?, ?, ?, ?, ?, ?, ?)'
+                            ).bind(newId, item.image_url, item.link_url, item.title, item.category_label, item.order_index || 0, item.is_active !== undefined ? item.is_active : 1).run();
+                            return json({ success: true, id: newId }, corsHeaders);
+                        } else if (action === 'update') {
+                            await env.DB.prepare(
+                                'UPDATE blog_carousel SET image_url = ?, link_url = ?, title = ?, category_label = ?, order_index = ?, is_active = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+                            ).bind(item.image_url, item.link_url, item.title, item.category_label, item.order_index, item.is_active, item.id).run();
+                            return json({ success: true }, corsHeaders);
+                        } else if (action === 'delete') {
+                            await env.DB.prepare('DELETE FROM blog_carousel WHERE id = ?').bind(item.id).run();
+                            return json({ success: true }, corsHeaders);
+                        } else if (action === 'reorder' && Array.isArray(items)) {
+                            const queries = items.map(p => 
+                                env.DB.prepare('UPDATE blog_carousel SET order_index = ? WHERE id = ?').bind(p.order_index, p.id)
+                            );
+                            await env.DB.batch(queries);
+                            return json({ success: true }, corsHeaders);
+                        }
+                        
+                        return json({ error: 'Invalid action' }, { ...corsHeaders, status: 400 });
+                    } catch (err) {
+                        return json({ error: 'Blog carousel operation failed', details: err.message }, { ...corsHeaders, status: 500 });
+                    }
+                }
 
                 // ADMIN: Get Categories
                 if (path === '/api/admin/blog/categories' && method === 'GET') {

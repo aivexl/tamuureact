@@ -87,15 +87,19 @@ export const AdminTemplatesPage: React.FC = () => {
     };
 
     const fetchCarousel = async () => {
+        if (!token) return;
         setLoadingCarousel(true);
         try {
-            const res = await safeFetch(`${API_BASE}/api/invitations/carousel`);
+            const res = await safeFetch(`${API_BASE}/api/admin/invitations/carousel`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             if (res.ok) {
                 const data = await res.json();
-                setCarouselSlides(Array.isArray(data) ? data : []);
+                // Correctly extract slides from the response object
+                setCarouselSlides(Array.isArray(data.slides) ? data.slides : []);
             }
         } catch (err) {
-            console.error(err);
+            console.error('[Admin] Fetch Carousel error:', err);
         } finally {
             setLoadingCarousel(false);
         }
