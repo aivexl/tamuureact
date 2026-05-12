@@ -65,11 +65,13 @@ import {
     Quote,
     Heading1,
     Heading2,
-    Heading3
+    Heading3,
+    UploadCloud
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import api from '@/lib/api';
 import { SUPPORTED_FONTS } from '../../lib/fonts';
+import { Modal } from '../../components/ui/Modal';
 
 const extensions = [
     StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: false, underline: false }),
@@ -96,47 +98,110 @@ const Toolbar = ({ editor }: { editor: any }) => {
     const [fontSearch, setFontSearch] = useState('');
     const filteredFonts = SUPPORTED_FONTS.filter(f => f.name.toLowerCase().includes(fontSearch.toLowerCase()));
 
-    const ToolBtn = ({ onClick, active, disabled, children, className = '' }: any) => (
-        <button 
-            onClick={onClick} 
-            disabled={disabled}
-            className={`p-2 rounded-lg text-xs transition-all shrink-0 ${active ? 'bg-teal-500 text-slate-900 shadow-lg' : 'text-slate-400 hover:bg-white/5 hover:text-white'} ${disabled ? 'opacity-30 cursor-not-allowed' : ''} ${className}`}
-        >
-            {children}
-        </button>
+    const [dialogConfig, setDialogConfig] = useState<{
+        isOpen: boolean;
+        type: 'link' | 'youtube' | 'image';
+        title: string;
+        placeholder: string;
+    }>({
+        isOpen: false,
+        type: 'link',
+        title: '',
+        placeholder: ''
+    });
+    const [dialogInput, setDialogInput] = useState('');
+    const imageInputRef = useRef<HTMLInputElement>(null);
+
+    const ToolBtn = ({ onClick, active, disabled, children, className = '', tooltip }: any) => (
+        <div className="relative group shrink-0">
+            <button 
+                onClick={onClick} 
+                disabled={disabled}
+                className={`p-2 rounded-lg text-xs transition-all shrink-0 ${active ? 'bg-teal-500 text-slate-900 shadow-lg' : 'text-slate-400 hover:bg-white/5 hover:text-white'} ${disabled ? 'opacity-30 cursor-not-allowed' : ''} ${className}`}
+            >
+                {children}
+            </button>
+            {tooltip && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 border border-white/10 shadow-xl">
+                    {tooltip}
+                </div>
+            )}
+        </div>
     );
 
     const Divider = () => <div className="w-px h-4 bg-white/10 mx-1 shrink-0" />;
 
-    const setLink = () => {
-        const url = window.prompt('Enter URL');
-        if (url) {
-            editor.chain().focus().setLink({ href: url }).run();
+    const openDialog = (type: 'link' | 'youtube' | 'image') => {
+        const configs = {
+            link: { title: 'Insert Link', placeholder: 'https://example.com' },
+            youtube: { title: 'Insert YouTube Video', placeholder: 'https://youtube.com/watch?v=...' },
+            image: { title: 'Insert Image URL', placeholder: 'https://example.com/image.jpg' }
+        };
+        setDialogConfig({ isOpen: true, type, ...configs[type] });
+        setDialogInput(type === 'link' ? editor.getAttributes('link').href || '' : '');
+    };
+
+    const handleDialogSubmit = () => {
+        if (!dialogInput) {
+            if (dialogConfig.type === 'link') {
+                editor.chain().focus().unsetLink().run();
+            }
+            return setDialogConfig({ ...dialogConfig, isOpen: false });
+        }
+
+        if (dialogConfig.type === 'link') {
+            editor.chain().focus().setLink({ href: dialogInput }).run();
+        } else if (dialogConfig.type === 'youtube') {
+            editor.chain().focus().setYoutubeVideo({ src: dialogInput }).run();
+        } else if (dialogConfig.type === 'image') {
+            editor.chain().focus().setImage({ src: dialogInput }).run();
+        }
+
+        setDialogConfig({ ...dialogConfig, isOpen: false });
+        setDialogInput('');
+    };
+
+    const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            toast.loading('Uploading image...', { id: 'editor-upload' });
+            const res = await api.assets.upload(formData);
+            if (res.url) {
+                editor.chain().focus().setImage({ src: res.url }).run();
+                toast.success('Image uploaded!', { id: 'editor-upload' });
+            }
+        } catch (err) {
+            toast.error('Failed to upload image', { id: 'editor-upload' });
+        } finally {
+            if (e.target) e.target.value = '';
         }
     };
 
-    const addYoutube = () => {
-        const url = window.prompt('Enter YouTube URL');
-        if (url) {
-            editor.chain().focus().setYoutubeVideo({ src: url }).run();
-        }
-    };
+    const setLink = () => openDialog('link');
+    const addYoutube = () => openDialog('youtube');
+    const addImageUrl = () => openDialog('image');
 
     return (
         <div className="flex flex-col border-b border-white/5 bg-white/[0.02] sticky top-0 z-20 backdrop-blur-xl">
             <div className="flex items-center gap-1 p-2 border-b border-white/5 overflow-x-auto no-scrollbar">
                 {/* 1. Undo/Redo */}
-                <ToolBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}><Redo className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} tooltip="Undo (Ctrl+Z)"><Undo className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} tooltip="Redo (Ctrl+Y)"><Redo className="w-3.5 h-3.5" /></ToolBtn>
                 
                 <Divider />
 
                 {/* 2. Fonts */}
-                <div className="relative shrink-0">
-                    <button onClick={() => setShowFonts(!showFonts)} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-slate-300 min-w-[100px] justify-between">
+                <div className="relative group shrink-0">
+                    <button onClick={() => setShowFonts(!showFonts)} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-slate-300 min-w-[100px] justify-between transition-all hover:bg-white/10 hover:text-white">
                         <span className="truncate">{editor.getAttributes('textStyle').fontFamily?.replace(/['"]+/g, '') || 'Font'}</span>
                         <ChevronDown className="w-3 h-3 opacity-50" />
                     </button>
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 border border-white/10 shadow-xl">
+                        Change Font
+                    </div>
                     {showFonts && (
                         <div className="absolute left-0 mt-3 w-72 max-h-[350px] overflow-hidden bg-[#0A0A0A]/95 backdrop-blur-3xl border border-white/10 rounded-[1.8rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 flex flex-col">
                             <div className="p-4 border-b border-white/5 bg-white/[0.02] flex items-center gap-3">
@@ -170,44 +235,99 @@ const Toolbar = ({ editor }: { editor: any }) => {
                 <Divider />
 
                 {/* 3. Headings */}
-                <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })}><Heading1 className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })}><Heading2 className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })}><Heading3 className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} tooltip="Heading 1"><Heading1 className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} tooltip="Heading 2"><Heading2 className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} tooltip="Heading 3"><Heading3 className="w-3.5 h-3.5" /></ToolBtn>
 
                 <Divider />
 
                 {/* 4. Formatting */}
-                <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')}><BoldIcon className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')}><ItalicIcon className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')}><UnderlineIcon className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')}><Strikethrough className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')}><Highlighter className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}><Eraser className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} tooltip="Bold (Ctrl+B)"><BoldIcon className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} tooltip="Italic (Ctrl+I)"><ItalicIcon className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')} tooltip="Underline (Ctrl+U)"><UnderlineIcon className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} tooltip="Strikethrough"><Strikethrough className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')} tooltip="Highlight"><Highlighter className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()} tooltip="Clear Formatting"><Eraser className="w-3.5 h-3.5" /></ToolBtn>
 
                 <Divider />
 
                 {/* 5. Alignment */}
-                <ToolBtn onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editor.isActive({ textAlign: 'left' })}><AlignLeft className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })}><AlignCenter className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editor.isActive({ textAlign: 'right' })}><AlignRight className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().setTextAlign('justify').run()} active={editor.isActive({ textAlign: 'justify' })}><AlignJustify className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editor.isActive({ textAlign: 'left' })} tooltip="Align Left"><AlignLeft className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })} tooltip="Align Center"><AlignCenter className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editor.isActive({ textAlign: 'right' })} tooltip="Align Right"><AlignRight className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().setTextAlign('justify').run()} active={editor.isActive({ textAlign: 'justify' })} tooltip="Align Justify"><AlignJustify className="w-3.5 h-3.5" /></ToolBtn>
 
                 <Divider />
 
                 {/* 6. Lists/Blocks */}
-                <ToolBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')}><List className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')}><ListOrdered className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().toggleTaskList().run()} active={editor.isActive('taskList')}><CheckSquare className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')}><Quote className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} tooltip="Bullet List"><List className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} tooltip="Ordered List"><ListOrdered className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleTaskList().run()} active={editor.isActive('taskList')} tooltip="Task List"><CheckSquare className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} tooltip="Blockquote"><Quote className="w-3.5 h-3.5" /></ToolBtn>
 
                 <Divider />
 
                 {/* 7. Insertions */}
-                <ToolBtn onClick={setLink} active={editor.isActive('link')}><LinkIcon className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><TableIcon className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={addYoutube}><YoutubeIcon className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={setLink} active={editor.isActive('link')} tooltip="Insert Link"><LinkIcon className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} tooltip="Horizontal Rule"><Minus className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} tooltip="Insert Table"><TableIcon className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={addYoutube} tooltip="Insert YouTube Video"><YoutubeIcon className="w-3.5 h-3.5" /></ToolBtn>
+                
+                <Divider />
+
+                {/* 8. Images */}
+                <div className="flex items-center gap-1">
+                    <ToolBtn onClick={() => imageInputRef.current?.click()} tooltip="Upload Image">
+                        <UploadCloud className="w-3.5 h-3.5" />
+                    </ToolBtn>
+                    <ToolBtn onClick={addImageUrl} tooltip="Image by URL">
+                        <ImageIcon className="w-3.5 h-3.5" />
+                    </ToolBtn>
+                    <input 
+                        type="file" 
+                        ref={imageInputRef} 
+                        onChange={onUploadImage} 
+                        className="hidden" 
+                        accept="image/*"
+                    />
+                </div>
             </div>
+
+            <Modal 
+                isOpen={dialogConfig.isOpen} 
+                onClose={() => setDialogConfig({ ...dialogConfig, isOpen: false })} 
+                title={dialogConfig.title}
+                size="sm"
+            >
+                <div className="space-y-6">
+                    <div className="space-y-2">
+                        <label className="text-[10px] font-black uppercase tracking-widest text-teal-500">URL / Source</label>
+                        <input 
+                            type="text" 
+                            value={dialogInput} 
+                            onChange={(e) => setDialogInput(e.target.value)}
+                            placeholder={dialogConfig.placeholder}
+                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm text-slate-900 outline-none focus:border-teal-500/50 transition-all font-medium"
+                            autoFocus
+                            onKeyDown={(e) => e.key === 'Enter' && handleDialogSubmit()}
+                        />
+                    </div>
+                    <div className="flex gap-3">
+                        <button 
+                            onClick={() => setDialogConfig({ ...dialogConfig, isOpen: false })}
+                            className="flex-1 px-6 py-4 rounded-2xl bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                        >
+                            Batal
+                        </button>
+                        <button 
+                            onClick={handleDialogSubmit}
+                            className="flex-1 px-6 py-4 rounded-2xl bg-teal-500 text-slate-900 text-[10px] font-black uppercase tracking-widest hover:bg-teal-400 transition-all shadow-lg shadow-teal-500/20"
+                        >
+                            Simpan
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };
