@@ -297,10 +297,7 @@ export const AdminBlogEditor = () => {
         content: '',
         editorProps: { 
             attributes: { 
-                class: 'prose prose-invert prose-teal max-w-none focus:outline-none min-h-[800px] p-6 sm:p-12 text-slate-300 text-base sm:text-lg ' +
-                       'prose-headings:text-white prose-headings:font-black prose-headings:tracking-tighter prose-headings:uppercase ' +
-                       'prose-h1:text-4xl prose-h2:text-3xl prose-h3:text-2xl ' +
-                       'prose-blockquote:border-l-4 prose-blockquote:border-teal-500 prose-blockquote:bg-white/5 prose-blockquote:py-2 prose-blockquote:px-6 prose-blockquote:rounded-r-xl'
+                class: 'ProseMirror focus:outline-none min-h-[800px] p-6 sm:p-12 text-slate-300 text-base sm:text-lg'
             } 
         }
     });
