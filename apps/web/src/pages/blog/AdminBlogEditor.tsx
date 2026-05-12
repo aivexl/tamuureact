@@ -166,6 +166,10 @@ export const AdminBlogEditor = () => {
     const [isFeatured, setIsFeatured] = useState(false);
     const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | null>(null);
     const [isCheckingSlug, setIsCheckingSlug] = useState(false);
+    const [seoTitle, setSeoTitle] = useState('');
+    const [seoDescription, setSeoDescription] = useState('');
+    const [seoKeywords, setSeoKeywords] = useState('');
+    const [imageAlt, setImageAlt] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const editor = useEditor({
@@ -182,6 +186,10 @@ export const AdminBlogEditor = () => {
                     setTitle(post.title); setSlug(post.slug); setExcerpt(post.excerpt || '');
                     setFeaturedImage(post.featured_image || ''); setCategory(post.category || '');
                     setStatus(post.status || 'draft'); setIsFeatured(!!post.is_featured);
+                    setSeoTitle(post.seo_title || '');
+                    setSeoDescription(post.seo_description || '');
+                    setSeoKeywords(post.seo_keywords || '');
+                    setImageAlt(post.image_alt || '');
                     setTimeout(() => editor.commands.setContent(post.content || ''), 100);
                 }
             });
@@ -192,7 +200,22 @@ export const AdminBlogEditor = () => {
         if (!title) return toast.error('Judul wajib diisi');
         setLoading(true);
         try {
-            const payload = { title, slug, content: editor?.getHTML() || '', excerpt, featured_image: featuredImage, category, is_featured: isFeatured, status: targetStatus, author_id: user?.id, author_email: user?.email };
+            const payload = { 
+                title, 
+                slug, 
+                content: editor?.getHTML() || '', 
+                excerpt, 
+                featured_image: featuredImage, 
+                category, 
+                is_featured: isFeatured, 
+                status: targetStatus, 
+                author_id: user?.id, 
+                author_email: user?.email,
+                seo_title: seoTitle,
+                seo_description: seoDescription,
+                seo_keywords: seoKeywords,
+                image_alt: imageAlt
+            };
             await (id ? api.blog.adminUpdate(id, payload) : api.blog.adminCreate(payload));
             toast.success('Artikel tersimpan!');
             navigate('/admin/blog');
