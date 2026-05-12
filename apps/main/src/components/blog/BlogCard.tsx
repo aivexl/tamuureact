@@ -60,7 +60,7 @@ export const BlogCard = React.memo(({ post, featured = false }: BlogCardProps) =
                     className="relative aspect-[21/9] w-full overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
                 >
                     <img
-                        alt={post.title}
+                        alt={post.image_alt || post.title}
                         className={`w-full h-full transition-transform duration-700 ${isLogo ? 'object-contain p-12 md:p-32 opacity-20' : 'object-cover group-hover:scale-105'}`}
                         src={imageUrl}
                     />
@@ -94,7 +94,7 @@ export const BlogCard = React.memo(({ post, featured = false }: BlogCardProps) =
                 <div className="p-3 pb-0">
                     <div className="aspect-[16/10] overflow-hidden rounded-xl border border-slate-100 bg-slate-50">
                         <img
-                            alt={post.title}
+                            alt={post.image_alt || post.title}
                             className={`w-full h-full transition-transform duration-500 ${isLogo ? 'object-contain p-8 opacity-30' : 'object-cover group-hover:scale-105'}`}
                             src={imageUrl}
                         />
