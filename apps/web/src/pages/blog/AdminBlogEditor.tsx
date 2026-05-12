@@ -293,12 +293,12 @@ const CategorySelector = ({ value, onChange, categories }: { value: string, onCh
             <AnimatePresence>
                 {isOpen && (
                     <motion.div 
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: -10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="absolute bottom-full left-0 w-full mb-2 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-[100] overflow-hidden backdrop-blur-3xl"
+                        exit={{ opacity: 0, y: -10 }}
+                        className="absolute top-full left-0 w-full mt-2 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-[9999] overflow-hidden backdrop-blur-3xl"
                     >
-                        {/* Search Bar */}
+                        {/* Search Bar (At the top) */}
                         <div className="p-3 border-b border-white/5 bg-white/5 flex items-center gap-2">
                             <Search className="w-3.5 h-3.5 text-slate-500" />
                             <input 
@@ -311,7 +311,7 @@ const CategorySelector = ({ value, onChange, categories }: { value: string, onCh
                             />
                         </div>
 
-                        {/* Add New Option */}
+                        {/* Add New Option (Right below Search) */}
                         <div className="p-2 border-b border-white/5 bg-teal-500/5">
                             {isAdding ? (
                                 <div className="flex gap-2">
@@ -443,6 +443,9 @@ export const AdminBlogEditor = () => {
                     setImageAlt(post.image_alt || '');
                     setTimeout(() => editor.commands.setContent(post.content || ''), 100);
                 }
+            }).catch(err => {
+                console.error('Fetch post error:', err);
+                toast.error('Gagal mengambil artikel. ID mungkin salah.');
             });
         }
     }, [id, editor]);
@@ -538,7 +541,7 @@ export const AdminBlogEditor = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-slate-300 pb-20 font-inter text-[13px]">
+        <div className="min-h-screen bg-[#050505] text-slate-300 pb-20 font-inter text-[13px] relative">
             <header className="sticky top-0 z-40 w-full bg-black/80 backdrop-blur-2xl border-b border-white/5 px-4 sm:px-8 h-20 flex items-center shadow-2xl">
                 <div className="max-w-[1600px] w-full mx-auto flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 sm:gap-6 min-w-0">
@@ -645,53 +648,57 @@ export const AdminBlogEditor = () => {
                 </aside>
             </main>
 
-            <Modal 
-                isOpen={dialogConfig.isOpen} 
-                onClose={() => setDialogConfig({ ...dialogConfig, isOpen: false })} 
-                title={dialogConfig.title}
-                size="sm"
-            >
-                <div className="space-y-8 p-1">
-                    <div className="space-y-4">
-                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-teal-500 flex items-center gap-2">
-                            <Plus className="w-3 h-3" /> Input Data
-                        </label>
-                        {dialogConfig.type === 'html' ? (
-                            <textarea
-                                value={dialogInput}
-                                onChange={(e) => setDialogInput(e.target.value)}
-                                placeholder={dialogConfig.placeholder}
-                                className="w-full h-48 bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 text-xs text-slate-900 font-mono outline-none focus:border-teal-500/50 focus:bg-white transition-all shadow-inner resize-none"
-                                autoFocus
-                            />
-                        ) : (
-                            <input 
-                                type="text" 
-                                value={dialogInput} 
-                                onChange={(e) => setDialogInput(e.target.value)}
-                                placeholder={dialogConfig.placeholder}
-                                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 text-sm text-slate-900 outline-none focus:border-teal-500/50 focus:bg-white transition-all font-bold shadow-inner"
-                                autoFocus
-                                onKeyDown={(e) => e.key === 'Enter' && handleDialogSubmit()}
-                            />
-                        )}
-                    </div>
-                    <div className="flex gap-4">
-                        <button 
-                            onClick={() => setDialogConfig({ ...dialogConfig, isOpen: false })}
-                            className="flex-1 px-6 py-5 rounded-2xl bg-slate-100 text-slate-500 text-[11px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
-                        >
-                            Batal
-                        </button>
-                        <button 
-                            onClick={handleDialogSubmit}
-                            className="flex-1 px-6 py-5 rounded-2xl bg-teal-500 text-slate-900 text-[11px] font-black uppercase tracking-widest hover:bg-teal-400 transition-all shadow-xl shadow-teal-500/30"
-                        >
-                            Simpan
-                        </button>
-                    </div>
-                </div>
-            </Modal>
+            <AnimatePresence>
+                {dialogConfig.isOpen && (
+                    <Modal 
+                        isOpen={dialogConfig.isOpen} 
+                        onClose={() => setDialogConfig({ ...dialogConfig, isOpen: false })} 
+                        title={dialogConfig.title}
+                        size="sm"
+                    >
+                        <div className="space-y-8 p-1">
+                            <div className="space-y-4">
+                                <label className="text-[11px] font-black uppercase tracking-[0.2em] text-teal-500 flex items-center gap-2">
+                                    <Plus className="w-3 h-3" /> Input Data
+                                </label>
+                                {dialogConfig.type === 'html' ? (
+                                    <textarea
+                                        value={dialogInput}
+                                        onChange={(e) => setDialogInput(e.target.value)}
+                                        placeholder={dialogConfig.placeholder}
+                                        className="w-full h-64 bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 text-xs text-slate-900 font-mono outline-none focus:border-teal-500/50 focus:bg-white transition-all shadow-inner resize-none"
+                                        autoFocus
+                                    />
+                                ) : (
+                                    <input 
+                                        type="text" 
+                                        value={dialogInput} 
+                                        onChange={(e) => setDialogInput(e.target.value)}
+                                        placeholder={dialogConfig.placeholder}
+                                        className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 text-sm text-slate-900 outline-none focus:border-teal-500/50 focus:bg-white transition-all font-bold shadow-inner"
+                                        autoFocus
+                                        onKeyDown={(e) => e.key === 'Enter' && handleDialogSubmit()}
+                                    />
+                                )}
+                            </div>
+                            <div className="flex gap-4">
+                                <button 
+                                    onClick={() => setDialogConfig({ ...dialogConfig, isOpen: false })}
+                                    className="flex-1 px-6 py-5 rounded-2xl bg-slate-100 text-slate-500 text-[11px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                                >
+                                    Batal
+                                </button>
+                                <button 
+                                    onClick={handleDialogSubmit}
+                                    className="flex-1 px-6 py-5 rounded-2xl bg-teal-500 text-slate-900 text-[11px] font-black uppercase tracking-widest hover:bg-teal-400 transition-all shadow-xl shadow-teal-500/30"
+                                >
+                                    Simpan
+                                </button>
+                            </div>
+                        </div>
+                    </Modal>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
