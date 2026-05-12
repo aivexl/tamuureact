@@ -61,7 +61,11 @@ import {
     Plus,
     X,
     RefreshCcw,
-    Star
+    Star,
+    Quote,
+    Heading1,
+    Heading2,
+    Heading3
 } from 'lucide-react';
 import { useStore } from '../../store/useStore';
 import api from '@/lib/api';
@@ -92,18 +96,42 @@ const Toolbar = ({ editor }: { editor: any }) => {
     const [fontSearch, setFontSearch] = useState('');
     const filteredFonts = SUPPORTED_FONTS.filter(f => f.name.toLowerCase().includes(fontSearch.toLowerCase()));
 
-    const ToolBtn = ({ onClick, active, children, className = '' }: any) => (
-        <button onClick={onClick} className={`p-2 rounded-lg text-xs transition-all shrink-0 ${active ? 'bg-teal-500 text-slate-900 shadow-lg' : 'text-slate-400 hover:bg-white/5 hover:text-white'} ${className}`}>
+    const ToolBtn = ({ onClick, active, disabled, children, className = '' }: any) => (
+        <button 
+            onClick={onClick} 
+            disabled={disabled}
+            className={`p-2 rounded-lg text-xs transition-all shrink-0 ${active ? 'bg-teal-500 text-slate-900 shadow-lg' : 'text-slate-400 hover:bg-white/5 hover:text-white'} ${disabled ? 'opacity-30 cursor-not-allowed' : ''} ${className}`}
+        >
             {children}
         </button>
     );
 
+    const Divider = () => <div className="w-px h-4 bg-white/10 mx-1 shrink-0" />;
+
+    const setLink = () => {
+        const url = window.prompt('Enter URL');
+        if (url) {
+            editor.chain().focus().setLink({ href: url }).run();
+        }
+    };
+
+    const addYoutube = () => {
+        const url = window.prompt('Enter YouTube URL');
+        if (url) {
+            editor.chain().focus().setYoutubeVideo({ src: url }).run();
+        }
+    };
+
     return (
         <div className="flex flex-col border-b border-white/5 bg-white/[0.02] sticky top-0 z-20 backdrop-blur-xl">
             <div className="flex items-center gap-1 p-2 border-b border-white/5 overflow-x-auto no-scrollbar">
+                {/* 1. Undo/Redo */}
                 <ToolBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()}><Undo className="w-3.5 h-3.5" /></ToolBtn>
                 <ToolBtn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()}><Redo className="w-3.5 h-3.5" /></ToolBtn>
-                <div className="w-px h-4 bg-white/10 mx-1 shrink-0" />
+                
+                <Divider />
+
+                {/* 2. Fonts */}
                 <div className="relative shrink-0">
                     <button onClick={() => setShowFonts(!showFonts)} className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-[10px] font-bold text-slate-300 min-w-[100px] justify-between">
                         <span className="truncate">{editor.getAttributes('textStyle').fontFamily?.replace(/['"]+/g, '') || 'Font'}</span>
@@ -138,14 +166,47 @@ const Toolbar = ({ editor }: { editor: any }) => {
                         </div>
                     )}
                 </div>
-                <div className="w-px h-4 bg-white/10 mx-1 shrink-0" />
+
+                <Divider />
+
+                {/* 3. Headings */}
+                <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })}><Heading1 className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })}><Heading2 className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })}><Heading3 className="w-3.5 h-3.5" /></ToolBtn>
+
+                <Divider />
+
+                {/* 4. Formatting */}
                 <ToolBtn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')}><BoldIcon className="w-3.5 h-3.5" /></ToolBtn>
                 <ToolBtn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')}><ItalicIcon className="w-3.5 h-3.5" /></ToolBtn>
                 <ToolBtn onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')}><UnderlineIcon className="w-3.5 h-3.5" /></ToolBtn>
-                <div className="w-px h-4 bg-white/10 mx-1 shrink-0" />
+                <ToolBtn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')}><Strikethrough className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')}><Highlighter className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().unsetAllMarks().clearNodes().run()}><Eraser className="w-3.5 h-3.5" /></ToolBtn>
+
+                <Divider />
+
+                {/* 5. Alignment */}
                 <ToolBtn onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editor.isActive({ textAlign: 'left' })}><AlignLeft className="w-3.5 h-3.5" /></ToolBtn>
                 <ToolBtn onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })}><AlignCenter className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editor.isActive({ textAlign: 'right' })}><AlignRight className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().setTextAlign('justify').run()} active={editor.isActive({ textAlign: 'justify' })}><AlignJustify className="w-3.5 h-3.5" /></ToolBtn>
+
+                <Divider />
+
+                {/* 6. Lists/Blocks */}
                 <ToolBtn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')}><List className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')}><ListOrdered className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleTaskList().run()} active={editor.isActive('taskList')}><CheckSquare className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')}><Quote className="w-3.5 h-3.5" /></ToolBtn>
+
+                <Divider />
+
+                {/* 7. Insertions */}
+                <ToolBtn onClick={setLink} active={editor.isActive('link')}><LinkIcon className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().setHorizontalRule().run()}><Minus className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}><TableIcon className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={addYoutube}><YoutubeIcon className="w-3.5 h-3.5" /></ToolBtn>
             </div>
         </div>
     );
@@ -175,7 +236,7 @@ export const AdminBlogEditor = () => {
     const editor = useEditor({
         extensions,
         content: '',
-        editorProps: { attributes: { class: 'prose prose-invert prose-teal max-w-none focus:outline-none min-h-[500px] p-6 sm:p-10 text-slate-300 text-base sm:text-lg' } }
+        editorProps: { attributes: { class: 'prose prose-invert prose-teal max-w-none focus:outline-none min-h-[800px] p-6 sm:p-10 text-slate-300 text-base sm:text-lg' } }
     });
 
     useEffect(() => {
