@@ -69,7 +69,7 @@ export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPos
     return (
         <div className="min-h-screen bg-white font-inter text-[#0A1128]">
             <motion.div className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-teal-500 to-teal-400 origin-left z-50" style={{ scaleX }} />
-            <main className="max-w-4xl mx-auto px-6 py-16 md:py-24">
+            <main className="max-w-4xl mx-auto px-6 pt-24 sm:pt-32 pb-16 md:pb-24">
                 <header className="mb-12 sm:mb-16">
                     <div className="mb-8 sm:mb-10 rounded-2xl sm:rounded-3xl overflow-hidden aspect-[16/9] sm:aspect-[2/1] bg-slate-50 relative group shadow-2xl">
                         <img 

@@ -30,6 +30,7 @@
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "^1.18.0",
+    "@tailwindcss/typography": "^0.5.19",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

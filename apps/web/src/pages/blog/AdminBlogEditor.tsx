@@ -260,6 +260,133 @@ const Toolbar = ({ editor, openDialog }: { editor: any, openDialog: any }) => {
     );
 };
 
+const CategorySelector = ({ value, onChange, categories }: { value: string, onChange: (val: string) => void, categories: any[] }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const [search, setSearch] = useState('');
+    const [isAdding, setIsAdding] = useState(false);
+    const [newCatName, setNewCatName] = useState('');
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    const filtered = categories.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setIsOpen(false);
+                setIsAdding(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    return (
+        <div className="relative" ref={containerRef}>
+            <div 
+                onClick={() => setIsOpen(!isOpen)}
+                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white flex items-center justify-between cursor-pointer hover:border-teal-500/50 transition-all shadow-inner"
+            >
+                <span className={value ? 'text-white font-bold' : 'text-slate-500'}>{value || 'Pilih kategori...'}</span>
+                <ChevronDown className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+            </div>
+
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        className="absolute bottom-full left-0 w-full mb-2 bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)] z-[100] overflow-hidden backdrop-blur-3xl"
+                    >
+                        {/* Search Bar */}
+                        <div className="p-3 border-b border-white/5 bg-white/5 flex items-center gap-2">
+                            <Search className="w-3.5 h-3.5 text-slate-500" />
+                            <input 
+                                type="text" 
+                                placeholder="Cari kategori..." 
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                className="bg-transparent border-0 focus:ring-0 text-xs text-white w-full p-0"
+                                autoFocus
+                            />
+                        </div>
+
+                        {/* Add New Option */}
+                        <div className="p-2 border-b border-white/5 bg-teal-500/5">
+                            {isAdding ? (
+                                <div className="flex gap-2">
+                                    <input 
+                                        type="text" 
+                                        value={newCatName} 
+                                        onChange={e => setNewCatName(e.target.value)}
+                                        placeholder="Nama kategori..."
+                                        className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-teal-500"
+                                        autoFocus
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                if (newCatName) {
+                                                    onChange(newCatName);
+                                                    setIsAdding(false);
+                                                    setNewCatName('');
+                                                    setIsOpen(false);
+                                                }
+                                            }
+                                        }}
+                                    />
+                                    <button 
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            if (newCatName) {
+                                                onChange(newCatName);
+                                                setIsAdding(false);
+                                                setNewCatName('');
+                                                setIsOpen(false);
+                                            }
+                                        }}
+                                        className="px-3 py-1.5 bg-teal-500 text-slate-900 rounded-lg text-[10px] font-black uppercase tracking-tighter"
+                                    >
+                                        Save
+                                    </button>
+                                </div>
+                            ) : (
+                                <button 
+                                    onClick={() => setIsAdding(true)}
+                                    className="w-full flex items-center gap-2 px-3 py-2 text-teal-500 hover:bg-teal-500/10 rounded-xl text-xs font-bold transition-all"
+                                >
+                                    <Plus className="w-3.5 h-3.5" /> Tambah Kategori Baru
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Categories List */}
+                        <div className="max-h-48 overflow-y-auto custom-scrollbar p-1">
+                            {filtered.length > 0 ? (
+                                filtered.map((cat: any) => (
+                                    <button
+                                        key={cat.id || cat.name}
+                                        onClick={() => {
+                                            onChange(cat.name);
+                                            setIsOpen(false);
+                                        }}
+                                        className="w-full text-left px-4 py-2.5 text-xs text-slate-300 hover:bg-white/5 hover:text-white rounded-xl transition-all flex items-center justify-between group"
+                                    >
+                                        <span>{cat.name}</span>
+                                        {value === cat.name && <CheckCircle2 className="w-3.5 h-3.5 text-teal-500" />}
+                                    </button>
+                                ))
+                            ) : (
+                                <div className="px-4 py-8 text-center text-[10px] text-slate-500 uppercase tracking-widest">
+                                    Tidak ada hasil
+                                </div>
+                            )}
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
 export const AdminBlogEditor = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -485,7 +612,11 @@ export const AdminBlogEditor = () => {
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-teal-500">Category</label>
-                            <input type="text" value={category} onChange={e => setCategory(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-white outline-none focus:border-teal-500" placeholder="Pilih kategori..." />
+                            <CategorySelector 
+                                value={category} 
+                                onChange={setCategory} 
+                                categories={categories} 
+                            />
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-teal-500">Excerpt</label>
