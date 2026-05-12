@@ -315,13 +315,28 @@ export const AdminBlogEditor = () => {
         }
     }, [id, editor]);
 
+    // Auto-generate slug from title for NEW posts
+    useEffect(() => {
+        if (!id && title && !slug) {
+            const generatedSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            setSlug(generatedSlug);
+        }
+    }, [title, id]);
+
     const handleSave = async (targetStatus: 'draft' | 'pending' | 'published') => {
         if (!title) return toast.error('Judul wajib diisi');
+        
+        let finalSlug = slug;
+        if (!finalSlug) {
+            finalSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+            setSlug(finalSlug);
+        }
+
         setLoading(true);
         try {
             const payload = { 
                 title, 
-                slug, 
+                slug: finalSlug, 
                 content: editor?.getHTML() || '', 
                 excerpt, 
                 featured_image: featuredImage, 
@@ -335,10 +350,20 @@ export const AdminBlogEditor = () => {
                 seo_keywords: seoKeywords,
                 image_alt: imageAlt
             };
-            await (id ? api.blog.adminUpdate(id, payload) : api.blog.adminCreate(payload));
+            const res = await (id ? api.blog.adminUpdate(id, payload) : api.blog.adminCreate(payload));
+            
+            if (res.error) {
+                throw new Error(res.error);
+            }
+
             toast.success('Artikel tersimpan!');
             navigate('/admin/blog');
-        } catch (err) { toast.error('Gagal menyimpan'); } finally { setLoading(false); }
+        } catch (err: any) { 
+            console.error('Save error:', err);
+            toast.error(err.message || 'Gagal menyimpan'); 
+        } finally { 
+            setLoading(false); 
+        }
     };
 
     const openDialog = (type: 'link' | 'youtube' | 'image') => {
@@ -433,6 +458,16 @@ export const AdminBlogEditor = () => {
                                 onChange={e => setImageAlt(e.target.value)} 
                                 className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-[10px] text-white outline-none focus:border-teal-500" 
                                 placeholder="Deskripsi gambar (Alt Text)..." 
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-teal-500">Slug / URL</label>
+                            <input 
+                                type="text" 
+                                value={slug} 
+                                onChange={e => setSlug(e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''))} 
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-teal-400 font-mono outline-none focus:border-teal-500" 
+                                placeholder="url-artikel-anda" 
                             />
                         </div>
                         <div className="space-y-2">
