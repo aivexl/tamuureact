@@ -92,29 +92,17 @@ const extensions = [
     Placeholder.configure({ placeholder: 'Mulai menulis kisah legendaris Anda disini...' })
 ];
 
-const Toolbar = ({ editor }: { editor: any }) => {
+const Toolbar = ({ editor, openDialog }: { editor: any, openDialog: any }) => {
     if (!editor) return null;
     const [showFonts, setShowFonts] = useState(false);
     const [fontSearch, setFontSearch] = useState('');
     const filteredFonts = SUPPORTED_FONTS.filter(f => f.name.toLowerCase().includes(fontSearch.toLowerCase()));
-
-    const [dialogConfig, setDialogConfig] = useState<{
-        isOpen: boolean;
-        type: 'link' | 'youtube' | 'image';
-        title: string;
-        placeholder: string;
-    }>({
-        isOpen: false,
-        type: 'link',
-        title: '',
-        placeholder: ''
-    });
-    const [dialogInput, setDialogInput] = useState('');
     const imageInputRef = useRef<HTMLInputElement>(null);
 
     const ToolBtn = ({ onClick, active, disabled, children, className = '', tooltip }: any) => (
         <div className="relative group shrink-0">
             <button 
+                type="button"
                 onClick={onClick} 
                 disabled={disabled}
                 className={`p-2 rounded-lg text-xs transition-all shrink-0 ${active ? 'bg-teal-500 text-slate-900 shadow-lg' : 'text-slate-400 hover:bg-white/5 hover:text-white'} ${disabled ? 'opacity-30 cursor-not-allowed' : ''} ${className}`}
@@ -122,44 +110,14 @@ const Toolbar = ({ editor }: { editor: any }) => {
                 {children}
             </button>
             {tooltip && (
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 border border-white/10 shadow-xl">
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-all scale-95 group-hover:scale-100 whitespace-nowrap pointer-events-none z-[1000] border border-white/10 shadow-2xl">
                     {tooltip}
                 </div>
             )}
         </div>
     );
 
-    const Divider = () => <div className="w-px h-4 bg-white/10 mx-1 shrink-0" />;
-
-    const openDialog = (type: 'link' | 'youtube' | 'image') => {
-        const configs = {
-            link: { title: 'Insert Link', placeholder: 'https://example.com' },
-            youtube: { title: 'Insert YouTube Video', placeholder: 'https://youtube.com/watch?v=...' },
-            image: { title: 'Insert Image URL', placeholder: 'https://example.com/image.jpg' }
-        };
-        setDialogConfig({ isOpen: true, type, ...configs[type] });
-        setDialogInput(type === 'link' ? editor.getAttributes('link').href || '' : '');
-    };
-
-    const handleDialogSubmit = () => {
-        if (!dialogInput) {
-            if (dialogConfig.type === 'link') {
-                editor.chain().focus().unsetLink().run();
-            }
-            return setDialogConfig({ ...dialogConfig, isOpen: false });
-        }
-
-        if (dialogConfig.type === 'link') {
-            editor.chain().focus().setLink({ href: dialogInput }).run();
-        } else if (dialogConfig.type === 'youtube') {
-            editor.chain().focus().setYoutubeVideo({ src: dialogInput }).run();
-        } else if (dialogConfig.type === 'image') {
-            editor.chain().focus().setImage({ src: dialogInput }).run();
-        }
-
-        setDialogConfig({ ...dialogConfig, isOpen: false });
-        setDialogInput('');
-    };
+    const Divider = () => <div className="w-px h-4 bg-white/10 mx-1 shrink-0 self-center" />;
 
     const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -180,13 +138,9 @@ const Toolbar = ({ editor }: { editor: any }) => {
         }
     };
 
-    const setLink = () => openDialog('link');
-    const addYoutube = () => openDialog('youtube');
-    const addImageUrl = () => openDialog('image');
-
     return (
-        <div className="flex flex-col border-b border-white/5 bg-white/[0.02] sticky top-0 z-20 backdrop-blur-xl">
-            <div className="flex items-center gap-1 p-2 border-b border-white/5 overflow-x-auto no-scrollbar">
+        <div className="flex flex-col border-b border-white/5 bg-white/[0.02] sticky top-0 z-20 backdrop-blur-xl rounded-t-[2rem]">
+            <div className="flex flex-wrap items-center gap-1 p-3">
                 {/* 1. Undo/Redo */}
                 <ToolBtn onClick={() => editor.chain().focus().undo().run()} disabled={!editor.can().undo()} tooltip="Undo (Ctrl+Z)"><Undo className="w-3.5 h-3.5" /></ToolBtn>
                 <ToolBtn onClick={() => editor.chain().focus().redo().run()} disabled={!editor.can().redo()} tooltip="Redo (Ctrl+Y)"><Redo className="w-3.5 h-3.5" /></ToolBtn>
@@ -199,11 +153,11 @@ const Toolbar = ({ editor }: { editor: any }) => {
                         <span className="truncate">{editor.getAttributes('textStyle').fontFamily?.replace(/['"]+/g, '') || 'Font'}</span>
                         <ChevronDown className="w-3 h-3 opacity-50" />
                     </button>
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50 border border-white/10 shadow-xl">
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 py-1 bg-slate-900 text-white text-[10px] font-bold rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-[1000] border border-white/10 shadow-xl">
                         Change Font
                     </div>
                     {showFonts && (
-                        <div className="absolute left-0 mt-3 w-72 max-h-[350px] overflow-hidden bg-[#0A0A0A]/95 backdrop-blur-3xl border border-white/10 rounded-[1.8rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-50 flex flex-col">
+                        <div className="absolute left-0 mt-3 w-72 max-h-[350px] overflow-hidden bg-[#0A0A0A]/95 backdrop-blur-3xl border border-white/10 rounded-[1.8rem] shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[1001] flex flex-col">
                             <div className="p-4 border-b border-white/5 bg-white/[0.02] flex items-center gap-3">
                                 <Search className="w-3.5 h-3.5 text-white/20" />
                                 <input 
@@ -268,10 +222,10 @@ const Toolbar = ({ editor }: { editor: any }) => {
                 <Divider />
 
                 {/* 7. Insertions */}
-                <ToolBtn onClick={setLink} active={editor.isActive('link')} tooltip="Insert Link"><LinkIcon className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => openDialog('link')} active={editor.isActive('link')} tooltip="Insert Link"><LinkIcon className="w-3.5 h-3.5" /></ToolBtn>
                 <ToolBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} tooltip="Horizontal Rule"><Minus className="w-3.5 h-3.5" /></ToolBtn>
                 <ToolBtn onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} tooltip="Insert Table"><TableIcon className="w-3.5 h-3.5" /></ToolBtn>
-                <ToolBtn onClick={addYoutube} tooltip="Insert YouTube Video"><YoutubeIcon className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => openDialog('youtube')} tooltip="Insert YouTube Video"><YoutubeIcon className="w-3.5 h-3.5" /></ToolBtn>
                 
                 <Divider />
 
@@ -280,7 +234,7 @@ const Toolbar = ({ editor }: { editor: any }) => {
                     <ToolBtn onClick={() => imageInputRef.current?.click()} tooltip="Upload Image">
                         <UploadCloud className="w-3.5 h-3.5" />
                     </ToolBtn>
-                    <ToolBtn onClick={addImageUrl} tooltip="Image by URL">
+                    <ToolBtn onClick={() => openDialog('image')} tooltip="Image by URL">
                         <ImageIcon className="w-3.5 h-3.5" />
                     </ToolBtn>
                     <input 
@@ -292,44 +246,6 @@ const Toolbar = ({ editor }: { editor: any }) => {
                     />
                 </div>
             </div>
-
-            <Modal 
-                isOpen={dialogConfig.isOpen} 
-                onClose={() => setDialogConfig({ ...dialogConfig, isOpen: false })} 
-                title={dialogConfig.title}
-                size="sm"
-            >
-                <div className="space-y-8 p-1">
-                    <div className="space-y-4">
-                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-teal-500 flex items-center gap-2">
-                            <Plus className="w-3 h-3" /> Input Source URL
-                        </label>
-                        <input 
-                            type="text" 
-                            value={dialogInput} 
-                            onChange={(e) => setDialogInput(e.target.value)}
-                            placeholder={dialogConfig.placeholder}
-                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 text-sm text-slate-900 outline-none focus:border-teal-500/50 focus:bg-white transition-all font-bold shadow-inner"
-                            autoFocus
-                            onKeyDown={(e) => e.key === 'Enter' && handleDialogSubmit()}
-                        />
-                    </div>
-                    <div className="flex gap-4">
-                        <button 
-                            onClick={() => setDialogConfig({ ...dialogConfig, isOpen: false })}
-                            className="flex-1 px-6 py-5 rounded-2xl bg-slate-100 text-slate-500 text-[11px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
-                        >
-                            Batal
-                        </button>
-                        <button 
-                            onClick={handleDialogSubmit}
-                            className="flex-1 px-6 py-5 rounded-2xl bg-teal-500 text-slate-900 text-[11px] font-black uppercase tracking-widest hover:bg-teal-400 transition-all shadow-xl shadow-teal-500/30"
-                        >
-                            Simpan
-                        </button>
-                    </div>
-                </div>
-            </Modal>
         </div>
     );
 };
@@ -347,13 +263,24 @@ export const AdminBlogEditor = () => {
     const [categories, setCategories] = useState<{ id: string, name: string }[]>([]);
     const [status, setStatus] = useState<'draft' | 'pending' | 'published'>('draft');
     const [isFeatured, setIsFeatured] = useState(false);
-    const [isSlugAvailable, setIsSlugAvailable] = useState<boolean | null>(null);
-    const [isCheckingSlug, setIsCheckingSlug] = useState(false);
     const [seoTitle, setSeoTitle] = useState('');
     const [seoDescription, setSeoDescription] = useState('');
     const [seoKeywords, setSeoKeywords] = useState('');
     const [imageAlt, setImageAlt] = useState('');
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const [dialogConfig, setDialogConfig] = useState<{
+        isOpen: boolean;
+        type: 'link' | 'youtube' | 'image';
+        title: string;
+        placeholder: string;
+    }>({
+        isOpen: false,
+        type: 'link',
+        title: '',
+        placeholder: ''
+    });
+    const [dialogInput, setDialogInput] = useState('');
 
     const editor = useEditor({
         extensions,
@@ -405,6 +332,37 @@ export const AdminBlogEditor = () => {
         } catch (err) { toast.error('Gagal menyimpan'); } finally { setLoading(false); }
     };
 
+    const openDialog = (type: 'link' | 'youtube' | 'image') => {
+        const configs = {
+            link: { title: 'Insert Link', placeholder: 'https://example.com' },
+            youtube: { title: 'Insert YouTube Video', placeholder: 'https://youtube.com/watch?v=...' },
+            image: { title: 'Insert Image URL', placeholder: 'https://example.com/image.jpg' }
+        };
+        setDialogConfig({ isOpen: true, type, ...configs[type] });
+        setDialogInput(type === 'link' ? editor?.getAttributes('link').href || '' : '');
+    };
+
+    const handleDialogSubmit = () => {
+        if (!editor) return;
+        if (!dialogInput) {
+            if (dialogConfig.type === 'link') {
+                editor.chain().focus().unsetLink().run();
+            }
+            return setDialogConfig({ ...dialogConfig, isOpen: false });
+        }
+
+        if (dialogConfig.type === 'link') {
+            editor.chain().focus().setLink({ href: dialogInput }).run();
+        } else if (dialogConfig.type === 'youtube') {
+            editor.chain().focus().setYoutubeVideo({ src: dialogInput }).run();
+        } else if (dialogConfig.type === 'image') {
+            editor.chain().focus().setImage({ src: dialogInput }).run();
+        }
+
+        setDialogConfig({ ...dialogConfig, isOpen: false });
+        setDialogInput('');
+    };
+
     return (
         <div className="min-h-screen bg-[#050505] text-slate-300 pb-20 font-inter">
             <header className="sticky top-0 z-40 w-full bg-black/80 backdrop-blur-2xl border-b border-white/5 px-4 sm:px-8 h-20 flex items-center shadow-2xl">
@@ -423,7 +381,7 @@ export const AdminBlogEditor = () => {
                 </div>
             </header>
 
-            <main className="max-w-[1600px] mx-auto px-4 sm:px-8 py-8 sm:py-12 grid grid-cols-1 xl:grid-cols-12 gap-8 sm:gap-12">
+            <main className="max-w-[1600px] mx-auto px-4 sm:px-8 py-8 sm:py-12 grid grid-cols-1 xl:grid-cols-12 gap-8 sm:gap-12 relative z-10">
                 <div className="xl:col-span-8 space-y-6">
                     <textarea
                         placeholder="Judul Artikel..."
@@ -431,8 +389,8 @@ export const AdminBlogEditor = () => {
                         onChange={e => setTitle(e.target.value)}
                         className="w-full text-3xl sm:text-5xl font-black bg-transparent border-0 border-b border-white/5 focus:border-teal-500 focus:ring-0 px-0 py-4 placeholder:text-white/5 text-white tracking-tight resize-none leading-tight"
                     />
-                    <div className="bg-[#0a0a0a] rounded-[2rem] border border-white/5 overflow-hidden shadow-2xl">
-                        <Toolbar editor={editor} />
+                    <div className="bg-[#0a0a0a] rounded-[2rem] border border-white/5 shadow-2xl relative z-10">
+                        <Toolbar editor={editor} openDialog={openDialog} />
                         <EditorContent editor={editor} />
                     </div>
                 </div>
@@ -487,6 +445,44 @@ export const AdminBlogEditor = () => {
                     </div>
                 </aside>
             </main>
+
+            <Modal 
+                isOpen={dialogConfig.isOpen} 
+                onClose={() => setDialogConfig({ ...dialogConfig, isOpen: false })} 
+                title={dialogConfig.title}
+                size="sm"
+            >
+                <div className="space-y-8 p-1">
+                    <div className="space-y-4">
+                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-teal-500 flex items-center gap-2">
+                            <Plus className="w-3 h-3" /> Input Source URL
+                        </label>
+                        <input 
+                            type="text" 
+                            value={dialogInput} 
+                            onChange={(e) => setDialogInput(e.target.value)}
+                            placeholder={dialogConfig.placeholder}
+                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 text-sm text-slate-900 outline-none focus:border-teal-500/50 focus:bg-white transition-all font-bold shadow-inner"
+                            autoFocus
+                            onKeyDown={(e) => e.key === 'Enter' && handleDialogSubmit()}
+                        />
+                    </div>
+                    <div className="flex gap-4">
+                        <button 
+                            onClick={() => setDialogConfig({ ...dialogConfig, isOpen: false })}
+                            className="flex-1 px-6 py-5 rounded-2xl bg-slate-100 text-slate-500 text-[11px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                        >
+                            Batal
+                        </button>
+                        <button 
+                            onClick={handleDialogSubmit}
+                            className="flex-1 px-6 py-5 rounded-2xl bg-teal-500 text-slate-900 text-[11px] font-black uppercase tracking-widest hover:bg-teal-400 transition-all shadow-xl shadow-teal-500/30"
+                        >
+                            Simpan
+                        </button>
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };
