@@ -266,6 +266,13 @@ export const AdminBlogEditor = () => {
                                     const res = await api.assets.upload(formData); if (res.url) setFeaturedImage(res.url);
                                 }} className="hidden" />
                             </div>
+                            <input 
+                                type="text" 
+                                value={imageAlt} 
+                                onChange={e => setImageAlt(e.target.value)} 
+                                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-[10px] text-white outline-none focus:border-teal-500" 
+                                placeholder="Deskripsi gambar (Alt Text)..." 
+                            />
                         </div>
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-teal-500">Category</label>
@@ -274,6 +281,25 @@ export const AdminBlogEditor = () => {
                         <div className="space-y-2">
                             <label className="text-[10px] font-black uppercase tracking-widest text-teal-500">Excerpt</label>
                             <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} rows={4} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-xs text-slate-400 outline-none focus:border-teal-500 resize-none" placeholder="Ringkasan singkat..." />
+                        </div>
+                        <div className="pt-6 border-t border-white/5 space-y-4">
+                            <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-teal-500">
+                                <Globe className="w-3 h-3" /> SEO & Metadata
+                            </label>
+                            <div className="space-y-3">
+                                <div className="space-y-1.5">
+                                    <span className="text-[9px] font-bold text-slate-500 uppercase">SEO Title</span>
+                                    <input type="text" value={seoTitle} onChange={e => setSeoTitle(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-teal-500" placeholder="Custom SEO Title..." />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <span className="text-[9px] font-bold text-slate-500 uppercase">SEO Description</span>
+                                    <textarea value={seoDescription} onChange={e => setSeoDescription(e.target.value)} rows={3} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-slate-400 outline-none focus:border-teal-500 resize-none" placeholder="Custom meta description..." />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <span className="text-[9px] font-bold text-slate-500 uppercase">SEO Keywords</span>
+                                    <input type="text" value={seoKeywords} onChange={e => setSeoKeywords(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white outline-none focus:border-teal-500" placeholder="keyword1, keyword2..." />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </aside>
