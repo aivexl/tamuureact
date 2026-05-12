@@ -36,7 +36,7 @@ interface Template {
 }
 
 export const AdminTemplatesPage: React.FC = () => {
-    const { showModal } = useStore();
+    const { showModal, token } = useStore();
     const navigate = useNavigate();
     const { type } = useParams<{ type: string }>();
 
@@ -67,7 +67,7 @@ export const AdminTemplatesPage: React.FC = () => {
     useEffect(() => {
         fetchTemplates();
         fetchCarousel();
-    }, []);
+    }, [token]);
 
     const fetchTemplates = async () => {
         setIsLoading(true);

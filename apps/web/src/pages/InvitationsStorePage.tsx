@@ -84,9 +84,11 @@ export const InvitationsStorePage: React.FC = () => {
                 const res = await safeFetch(`${API_BASE}/api/invitations/carousel`);
                 if (res.ok) {
                     const data = await res.json();
-                    if (Array.isArray(data) && data.length > 0) {
+                    const slides = Array.isArray(data.slides) ? data.slides : [];
+                    
+                    if (slides.length > 0) {
                         // Ensure we always have at least 6 slides
-                        let finalSlides = [...data];
+                        let finalSlides = [...slides];
                         if (finalSlides.length < 6) {
                             const padding = fallbackSlides.slice(0, 6 - finalSlides.length);
                             finalSlides = [...finalSlides, ...padding];
