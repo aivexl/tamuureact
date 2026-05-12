@@ -62,7 +62,7 @@ export default function BlogContent({ initialPosts, categories, carouselSlides }
     };
 
     return (
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-32 pt-[140px] md:pt-[130px]">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-32 pt-32 sm:pt-48">
             
             {/* Breadcrumbs Navigation */}
             <div className="mb-8">
