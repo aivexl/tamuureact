@@ -232,6 +232,7 @@ const Toolbar = ({ editor, openDialog }: { editor: any, openDialog: any }) => {
 
                 {/* 7. Insertions */}
                 <ToolBtn onClick={() => openDialog('link')} active={editor.isActive('link')} tooltip="Insert Link"><LinkIcon className="w-3.5 h-3.5" /></ToolBtn>
+                <ToolBtn onClick={() => openDialog('html')} tooltip="Import Raw HTML (from AI)"><RefreshCcw className="w-3.5 h-3.5" /></ToolBtn>
                 <ToolBtn onClick={() => editor.chain().focus().setHorizontalRule().run()} tooltip="Horizontal Rule"><Minus className="w-3.5 h-3.5" /></ToolBtn>
                 <ToolBtn onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} tooltip="Insert Table"><TableIcon className="w-3.5 h-3.5" /></ToolBtn>
                 <ToolBtn onClick={() => openDialog('youtube')} tooltip="Insert YouTube Video"><YoutubeIcon className="w-3.5 h-3.5" /></ToolBtn>
@@ -280,7 +281,7 @@ export const AdminBlogEditor = () => {
 
     const [dialogConfig, setDialogConfig] = useState<{
         isOpen: boolean;
-        type: 'link' | 'youtube' | 'image';
+        type: 'link' | 'youtube' | 'image' | 'html';
         title: string;
         placeholder: string;
     }>({
@@ -366,11 +367,12 @@ export const AdminBlogEditor = () => {
         }
     };
 
-    const openDialog = (type: 'link' | 'youtube' | 'image') => {
+    const openDialog = (type: 'link' | 'youtube' | 'image' | 'html') => {
         const configs = {
             link: { title: 'Insert Link', placeholder: 'https://example.com' },
             youtube: { title: 'Insert YouTube Video', placeholder: 'https://youtube.com/watch?v=...' },
-            image: { title: 'Insert Image URL', placeholder: 'https://example.com/image.jpg' }
+            image: { title: 'Insert Image URL', placeholder: 'https://example.com/image.jpg' },
+            html: { title: 'Import Raw HTML', placeholder: 'Paste your HTML code here...' }
         };
         setDialogConfig({ isOpen: true, type, ...configs[type] });
         setDialogInput(type === 'link' ? editor?.getAttributes('link').href || '' : '');
@@ -391,6 +393,8 @@ export const AdminBlogEditor = () => {
             editor.chain().focus().setYoutubeVideo({ src: dialogInput }).run();
         } else if (dialogConfig.type === 'image') {
             editor.chain().focus().setImage({ src: dialogInput }).run();
+        } else if (dialogConfig.type === 'html') {
+            editor.commands.setContent(dialogInput, true);
         }
 
         setDialogConfig({ ...dialogConfig, isOpen: false });
@@ -510,17 +514,27 @@ export const AdminBlogEditor = () => {
                 <div className="space-y-8 p-1">
                     <div className="space-y-4">
                         <label className="text-[11px] font-black uppercase tracking-[0.2em] text-teal-500 flex items-center gap-2">
-                            <Plus className="w-3 h-3" /> Input Source URL
+                            <Plus className="w-3 h-3" /> Input Data
                         </label>
-                        <input 
-                            type="text" 
-                            value={dialogInput} 
-                            onChange={(e) => setDialogInput(e.target.value)}
-                            placeholder={dialogConfig.placeholder}
-                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 text-sm text-slate-900 outline-none focus:border-teal-500/50 focus:bg-white transition-all font-bold shadow-inner"
-                            autoFocus
-                            onKeyDown={(e) => e.key === 'Enter' && handleDialogSubmit()}
-                        />
+                        {dialogConfig.type === 'html' ? (
+                            <textarea
+                                value={dialogInput}
+                                onChange={(e) => setDialogInput(e.target.value)}
+                                placeholder={dialogConfig.placeholder}
+                                className="w-full h-48 bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 text-xs text-slate-900 font-mono outline-none focus:border-teal-500/50 focus:bg-white transition-all shadow-inner resize-none"
+                                autoFocus
+                            />
+                        ) : (
+                            <input 
+                                type="text" 
+                                value={dialogInput} 
+                                onChange={(e) => setDialogInput(e.target.value)}
+                                placeholder={dialogConfig.placeholder}
+                                className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 text-sm text-slate-900 outline-none focus:border-teal-500/50 focus:bg-white transition-all font-bold shadow-inner"
+                                autoFocus
+                                onKeyDown={(e) => e.key === 'Enter' && handleDialogSubmit()}
+                            />
+                        )}
                     </div>
                     <div className="flex gap-4">
                         <button 
