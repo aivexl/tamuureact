@@ -72,6 +72,7 @@ import { useStore } from '../../store/useStore';
 import api from '@/lib/api';
 import { SUPPORTED_FONTS } from '../../lib/fonts';
 import { Modal } from '../../components/ui/Modal';
+import { compressImage } from '../../lib/image-processor';
 
 const extensions = [
     StarterKit.configure({ heading: { levels: [1, 2, 3] }, link: false, underline: false }),
@@ -122,14 +123,22 @@ const Toolbar = ({ editor, openDialog }: { editor: any, openDialog: any }) => {
     const onUploadImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
-        const formData = new FormData();
-        formData.append('file', file);
+        
         try {
-            toast.loading('Uploading image...', { id: 'editor-upload' });
+            toast.loading('Optimizing & Uploading...', { id: 'editor-upload' });
+            
+            // 1. Compress Image
+            const compressedBlob = await compressImage(file, { maxWidth: 1280, quality: 0.8 });
+            
+            // 2. Prepare FormData
+            const formData = new FormData();
+            formData.append('file', compressedBlob, `blog-content-${Date.now()}.webp`);
+            
+            // 3. Upload
             const res = await api.assets.upload(formData);
             if (res.url) {
                 editor.chain().focus().setImage({ src: res.url }).run();
-                toast.success('Image uploaded!', { id: 'editor-upload' });
+                toast.success('Image optimized & inserted!', { id: 'editor-upload' });
             }
         } catch (err) {
             toast.error('Failed to upload image', { id: 'editor-upload' });
@@ -364,7 +373,7 @@ export const AdminBlogEditor = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#050505] text-slate-300 pb-20 font-inter">
+        <div className="min-h-screen bg-[#050505] text-slate-300 pb-20 font-inter text-[13px]">
             <header className="sticky top-0 z-40 w-full bg-black/80 backdrop-blur-2xl border-b border-white/5 px-4 sm:px-8 h-20 flex items-center shadow-2xl">
                 <div className="max-w-[1600px] w-full mx-auto flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 sm:gap-6 min-w-0">
@@ -403,9 +412,20 @@ export const AdminBlogEditor = () => {
                                 {featuredImage ? <img src={featuredImage} className="w-full h-full object-cover" /> : <ImageIcon className="w-8 h-8 text-white/10" />}
                                 <input type="file" ref={fileInputRef} onChange={async (e) => {
                                     const file = e.target.files?.[0]; if (!file) return;
-                                    const formData = new FormData(); formData.append('file', file);
-                                    const res = await api.assets.upload(formData); if (res.url) setFeaturedImage(res.url);
-                                }} className="hidden" />
+                                    try {
+                                        toast.loading('Optimizing Thumbnail...', { id: 'thumb-upload' });
+                                        const compressedBlob = await compressImage(file, { maxWidth: 1280, quality: 0.85 });
+                                        const formData = new FormData(); 
+                                        formData.append('file', compressedBlob, `thumb-${Date.now()}.webp`);
+                                        const res = await api.assets.upload(formData); 
+                                        if (res.url) {
+                                            setFeaturedImage(res.url);
+                                            toast.success('Thumbnail optimized!', { id: 'thumb-upload' });
+                                        }
+                                    } catch (err) {
+                                        toast.error('Gagal mengoptimalkan gambar');
+                                    }
+                                }} className="hidden" accept="image/*" />
                             </div>
                             <input 
                                 type="text" 
