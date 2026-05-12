@@ -299,29 +299,31 @@ const Toolbar = ({ editor }: { editor: any }) => {
                 title={dialogConfig.title}
                 size="sm"
             >
-                <div className="space-y-6">
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-teal-500">URL / Source</label>
+                <div className="space-y-8 p-1">
+                    <div className="space-y-4">
+                        <label className="text-[11px] font-black uppercase tracking-[0.2em] text-teal-500 flex items-center gap-2">
+                            <Plus className="w-3 h-3" /> Input Source URL
+                        </label>
                         <input 
                             type="text" 
                             value={dialogInput} 
                             onChange={(e) => setDialogInput(e.target.value)}
                             placeholder={dialogConfig.placeholder}
-                            className="w-full bg-slate-50 border border-slate-100 rounded-2xl px-6 py-4 text-sm text-slate-900 outline-none focus:border-teal-500/50 transition-all font-medium"
+                            className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-6 py-5 text-sm text-slate-900 outline-none focus:border-teal-500/50 focus:bg-white transition-all font-bold shadow-inner"
                             autoFocus
                             onKeyDown={(e) => e.key === 'Enter' && handleDialogSubmit()}
                         />
                     </div>
-                    <div className="flex gap-3">
+                    <div className="flex gap-4">
                         <button 
                             onClick={() => setDialogConfig({ ...dialogConfig, isOpen: false })}
-                            className="flex-1 px-6 py-4 rounded-2xl bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
+                            className="flex-1 px-6 py-5 rounded-2xl bg-slate-100 text-slate-500 text-[11px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all"
                         >
                             Batal
                         </button>
                         <button 
                             onClick={handleDialogSubmit}
-                            className="flex-1 px-6 py-4 rounded-2xl bg-teal-500 text-slate-900 text-[10px] font-black uppercase tracking-widest hover:bg-teal-400 transition-all shadow-lg shadow-teal-500/20"
+                            className="flex-1 px-6 py-5 rounded-2xl bg-teal-500 text-slate-900 text-[11px] font-black uppercase tracking-widest hover:bg-teal-400 transition-all shadow-xl shadow-teal-500/30"
                         >
                             Simpan
                         </button>

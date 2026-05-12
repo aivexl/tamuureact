@@ -48,21 +48,21 @@ export const Modal: React.FC<ModalProps> = ({
                             exit={{ opacity: 0, scale: 0.9, y: 20 }}
                             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
                             onClick={(e) => e.stopPropagation()}
-                            className={`w-full ${sizeClasses[size]} bg-white rounded-[3rem] shadow-2xl cursor-default overflow-hidden flex flex-col max-h-[90vh]`}
+                            className={`w-full ${sizeClasses[size]} bg-white rounded-[2rem] shadow-2xl cursor-default overflow-hidden flex flex-col max-h-[85vh] relative`}
                         >
                             {/* Header */}
-                            <div className="px-8 py-6 border-b border-slate-50 flex items-center justify-between bg-white/80 backdrop-blur-sm sticky top-0 z-10">
-                                <h3 className="text-xl font-black text-slate-900 tracking-tight font-outfit uppercase tracking-widest">{title}</h3>
+                            <div className="px-6 py-5 border-b border-slate-50 flex items-center justify-between bg-white/90 backdrop-blur-md sticky top-0 z-20">
+                                <h3 className="text-lg font-black text-slate-900 tracking-tight font-outfit uppercase tracking-widest">{title}</h3>
                                 <button
                                     onClick={onClose}
-                                    className="p-2 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-2xl transition-all"
+                                    className="p-2.5 hover:bg-slate-100 text-slate-400 hover:text-slate-600 rounded-2xl transition-all shadow-sm active:scale-95"
                                 >
-                                    <X className="w-6 h-6" />
+                                    <X className="w-5 h-5" />
                                 </button>
                             </div>
 
                             {/* Body */}
-                            <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                            <div className="flex-1 overflow-y-auto p-6 sm:p-10 custom-scrollbar">
                                 {children}
                             </div>
                         </motion.div>
