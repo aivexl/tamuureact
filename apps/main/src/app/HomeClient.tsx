@@ -254,7 +254,7 @@ export default function HomeContent() {
                                                 alt={post.title} 
                                             />
                                             <div className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm rounded-lg text-[8px] font-black text-[#0A1128] uppercase tracking-widest">
-                                                Inspirasi
+                                                {post.category || 'Inspirasi'}
                                             </div>
                                         </div>
                                         <div className="px-2">
