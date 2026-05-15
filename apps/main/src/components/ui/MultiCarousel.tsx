@@ -77,8 +77,8 @@ export const MultiCarousel = ({ items }: MultiCarouselProps) => {
                 style={{ transform: `translateX(${translateX}px)`, gap: `${gapPx}px` }}
             >
                 {carouselItems.map((item, idx) => {
-                    // Use logo if image is unsplash or missing
-                    const displayImage = (!item.image_url || item.image_url.includes('unsplash.com')) 
+                    // Use logo if image is missing
+                    const displayImage = !item.image_url
                         ? '/images/logo-tamuu-vfinal-v1.webp' 
                         : item.image_url;
 
