@@ -232,7 +232,9 @@ export default function HomeContent() {
                         <div className="flex items-center justify-between mb-8 px-4">
                             <div className="flex items-center gap-3">
                                 <div className="w-1.5 h-6 bg-[#FFBF00] rounded-full" />
-                                <h2 className="text-lg md:text-2xl font-black text-[#0A1128] uppercase tracking-tight italic">Tamuu Blog</h2>
+                                <Link href="/blog">
+                                    <h2 className="text-lg md:text-2xl font-black text-[#0A1128] hover:text-[#FFBF00] transition-colors cursor-pointer uppercase tracking-tight italic">Tamuu Blog</h2>
+                                </Link>
                             </div>
                             <div className="flex items-center gap-2">
                                 <button onClick={() => handleScroll('blog-scroll', -300)} className="p-2 rounded-full bg-slate-50 border border-slate-100 hover:bg-[#FFBF00] transition-all"><ChevronLeft className="w-4 h-4" /></button>
