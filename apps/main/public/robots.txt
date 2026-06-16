@@ -32,5 +32,5 @@ Allow: /shop/
 Allow: /blog/
 
 # Sitemap Discovery
-Sitemap: https://tamuu.id/api/sitemap/shop
 Sitemap: https://tamuu.id/sitemap.xml
+Sitemap: https://tamuu.id/api/sitemap/shop

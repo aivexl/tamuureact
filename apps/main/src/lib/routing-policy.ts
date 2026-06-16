@@ -63,7 +63,9 @@ export const NEXTJS_PUBLIC_PATHS = [
     '/privacy',
     '/contact',
     '/pricing',
-    '/wedding-marketplace'
+    '/wedding-marketplace',
+    '/sitemap.xml',
+    '/api/sitemap'
 ];
 
 /**
