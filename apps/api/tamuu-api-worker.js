@@ -5344,7 +5344,11 @@ name = COALESCE(?, name),
             // TEMPLATES ENDPOINTS
             // ============================================
             if (path === '/api/templates' && method === 'GET') {
+                const type = url.searchParams.get('type');
+                const includeDrafts = url.searchParams.get('include_drafts') === 'true';
+
                 // Use smart cache with 60s TTL
+                // CTO: Include include_drafts in cache key to avoid leaking drafts to public users
                 return await smart_cache(request, 60, async () => {
                     // [MIGRATION] Auto-correct Display templates from early V5.1
                     // This fixes templates created before the type separation was fully enforced
@@ -5352,11 +5356,18 @@ name = COALESCE(?, name),
                         "UPDATE templates SET type = 'display' WHERE (name LIKE '%Display%' OR name LIKE '%Layar%') AND type = 'invitation'"
                     ).run();
 
-                    // Support type filter (e.g., ?type=display)
-                    const type = url.searchParams.get('type');
+                    // Support type filter (e.g., ?type=display) and status filter
                     let query = 'SELECT * FROM templates';
+                    let conditions = [];
                     if (type) {
-                        query += ` WHERE type = '${type}'`;
+                        conditions.push(`type = '${type}'`);
+                    }
+                    if (!includeDrafts) {
+                        conditions.push("status = 'published'");
+                    }
+
+                    if (conditions.length > 0) {
+                        query += ' WHERE ' + conditions.join(' AND ');
                     }
                     query += ' ORDER BY updated_at DESC LIMIT 100';
 
@@ -5383,8 +5394,8 @@ name = COALESCE(?, name),
                 const orbit = orbitRaw !== undefined ? JSON.stringify(orbitRaw) : '{}';
 
                 await env.DB.prepare(
-                    `INSERT INTO templates(id, name, slug, category, sections, layers, orbit, orbit_layers, type, thumbnail, music) 
-     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+                    `INSERT INTO templates(id, name, slug, category, sections, layers, orbit, orbit_layers, type, thumbnail, music, status) 
+     VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
                 ).bind(
                     id,
                     body.name || 'Untitled Template',
@@ -5396,7 +5407,8 @@ name = COALESCE(?, name),
                     orbit, // orbit_layers
                     body.type || 'invitation',
                     body.thumbnail ?? null,
-                    body.music ? JSON.stringify(body.music) : null
+                    body.music ? JSON.stringify(body.music) : null,
+                    body.status || 'draft' // Default to draft for new templates
                 ).run();
                 return json({ id, ...body }, corsHeaders);
             }
@@ -5442,6 +5454,7 @@ name = COALESCE(?, name),
             orbit = COALESCE(?, orbit),
             orbit_layers = COALESCE(?, orbit_layers),
             music = COALESCE(?, music),
+            status = COALESCE(?, status),
             updated_at = datetime('now')
          WHERE id = ?`
                     ).bind(
@@ -5457,6 +5470,7 @@ name = COALESCE(?, name),
                         orbit, // Update orbit
                         orbit, // Update orbit_layers (redundancy)
                         body.music ? JSON.stringify(body.music) : null,
+                        body.status ?? null,
                         id
                     ).run();
                     return json({ id, updated: true }, corsHeaders);

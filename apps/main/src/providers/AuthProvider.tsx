@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             if (res.ok) {
                 const d1User = await res.json();
-                console.log('[Auth Sync] Synced with D1:', d1User);
+                // console.log('[Auth Sync] Synced with D1:', d1User);
                 
                 const fullUser = { 
                     ...initialUser, 
@@ -106,10 +106,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
-            console.log(`[Auth Event] ${event}`);
+            // console.log(`[Auth Event] ${event}`);
             
             if (isLoggingOut.current) {
-                console.log('[Auth Sync] Skipping event during logout');
+                // console.log('[Auth Sync] Skipping event during logout');
                 return;
             }
 

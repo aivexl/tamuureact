@@ -32,6 +32,7 @@ interface Template {
     category?: string;
     updated_at: string;
     type?: 'invitation' | 'display';
+    status?: 'published' | 'draft';
     sourceTable: 'templates' | 'invitations';
 }
 
@@ -67,22 +68,46 @@ export const AdminTemplatesPage: React.FC = () => {
     useEffect(() => {
         fetchTemplates();
         fetchCarousel();
-    }, [token]);
+    }, [token, activeTab]); // Added activeTab to dependency to refetch when switching between invitation/display
 
     const fetchTemplates = async () => {
         setIsLoading(true);
         try {
-            const data = await templatesApi.list();
+            // Include drafts for admin view
+            const data = await templatesApi.list(activeTab, true);
             const processed = (data || []).map((t: any) => ({
                 ...t,
                 sourceTable: 'templates' as const,
-                type: t.type || 'invitation' // Default to invitation if missing
+                type: t.type || 'invitation',
+                status: t.status || 'published'
             }));
             setTemplates(processed);
         } catch (err) {
             console.error('[Admin] Fetch error:', err);
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleToggleStatus = async (template: Template, e: React.MouseEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const newStatus = template.status === 'published' ? 'draft' : 'published';
+        
+        try {
+            toast.loading(`Setting to ${newStatus}...`, { id: 'status-toggle' });
+            await templatesApi.update(template.id, { status: newStatus });
+            
+            // Local state update for smooth UX
+            setTemplates(prev => prev.map(t => 
+                t.id === template.id ? { ...t, status: newStatus } : t
+            ));
+            
+            toast.success(`Template ${newStatus === 'published' ? 'diterbitkan' : 'disimpan sebagai draf'}`, { id: 'status-toggle' });
+        } catch (err: any) {
+            console.error('[Admin] Toggle status error:', err);
+            toast.error(err.message || 'Gagal mengubah status template', { id: 'status-toggle' });
         }
     };
 
@@ -463,9 +488,16 @@ export const AdminTemplatesPage: React.FC = () => {
                                         )}
 
                                         {/* Type Badge (Floating Top Right) */}
-                                        <div className="absolute top-2 right-2">
+                                        <div className="absolute top-2 right-2 flex flex-col gap-1.5 items-end">
                                             <div className="bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest text-white/60 border border-white/10">
                                                 {template.type === 'display' ? 'TV' : 'MOB'}
+                                            </div>
+                                            <div className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-widest border backdrop-blur-md ${
+                                                template.status === 'published' 
+                                                    ? 'bg-teal-500/20 text-teal-400 border-teal-500/30' 
+                                                    : 'bg-slate-500/20 text-slate-400 border-slate-500/30'
+                                            }`}>
+                                                {template.status || 'PUBLISHED'}
                                             </div>
                                         </div>
                                     </div>
@@ -478,25 +510,42 @@ export const AdminTemplatesPage: React.FC = () => {
                                             </h3>
 
                                             {/* Persistent Sharp Actions */}
-                                            <div className="flex items-center gap-2">
+                                            <div className="space-y-2">
                                                 <button
-                                                    onClick={() => {
-                                                        const editorPath = template.type === 'display'
-                                                            ? `/admin/display-editor/${template.slug || template.id}`
-                                                            : `/admin/editor/${template.slug || template.id}`;
-                                                        navigate(editorPath);
-                                                    }}
-                                                    className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-teal-500/10 hover:bg-teal-500 text-teal-500 hover:text-slate-900 transition-all duration-200 rounded-lg text-[10px] font-black uppercase tracking-wider"
+                                                    onClick={(e) => handleToggleStatus(template, e)}
+                                                    className={`w-full flex items-center justify-center gap-1.5 py-2 transition-all duration-200 rounded-lg text-[10px] font-black uppercase tracking-wider border ${
+                                                        template.status === 'published'
+                                                            ? 'bg-slate-800/50 text-slate-400 border-white/5 hover:bg-slate-700'
+                                                            : 'bg-teal-500/10 text-teal-500 border-teal-500/20 hover:bg-teal-500 hover:text-slate-900'
+                                                    }`}
                                                 >
-                                                    <Edit3 className="w-3 h-3" /> Edit
+                                                    {template.status === 'published' ? (
+                                                        <><FolderOpen className="w-3 h-3" /> Set to Draft</>
+                                                    ) : (
+                                                        <><UploadCloud className="w-3 h-3" /> Publish Now</>
+                                                    )}
                                                 </button>
-                                                <button
-                                                    onClick={(e) => handleDelete(template.id, e)}
-                                                    className="w-10 flex items-center justify-center py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white transition-all duration-200 rounded-lg"
-                                                    title="Hapus"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
+
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            const editorPath = template.type === 'display'
+                                                                ? `/admin/display-editor/${template.slug || template.id}`
+                                                                : `/admin/editor/${template.slug || template.id}`;
+                                                            navigate(editorPath);
+                                                        }}
+                                                        className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-white/5 hover:bg-white/10 text-white/70 transition-all duration-200 rounded-lg text-[10px] font-black uppercase tracking-wider border border-white/5"
+                                                    >
+                                                        <Edit3 className="w-3 h-3" /> Edit
+                                                    </button>
+                                                    <button
+                                                        onClick={(e) => handleDelete(template.id, e)}
+                                                        className="w-10 flex items-center justify-center py-2 bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white transition-all duration-200 rounded-lg"
+                                                        title="Hapus"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
 

@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     // Handle passive redirect for unauthenticated users on private paths
                     const isPrivatePath = PRIVATE_PATHS.some(path => window.location.pathname.startsWith(path));
                     if (isPrivatePath) {
-                        console.log('[Auth Guard] No session found on private path. Redirecting to central login hub...');
+                        // console.log('[Auth Guard] No session found on private path. Redirecting to central login hub...');
                         window.location.href = `https://tamuu.id/login?return_to=${encodeURIComponent(window.location.href)}`;
                         return; // Prevent further execution
                     }
@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // 2. Listen for auth state changes
         // Passive Listener: Only updates local state and never triggers a refresh
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log(`[Auth Event] ${event}`);
+            // console.log(`[Auth Event] ${event}`);
 
             if (session) {
                 // Non-blocking profile sync for faster UI response
@@ -61,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // Handle redirect if session is lost while on a private path
                 const isPrivatePath = PRIVATE_PATHS.some(path => window.location.pathname.startsWith(path));
                 if (isPrivatePath && (event === 'SIGNED_OUT' || event === 'USER_UPDATED')) {
-                    console.log('[Auth Guard] Session lost on private path. Redirecting...');
+                    // console.log('[Auth Guard] Session lost on private path. Redirecting...');
                     window.location.href = `https://tamuu.id/login?return_to=${encodeURIComponent(window.location.href)}`;
                 }
             }
@@ -134,7 +134,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             };
 
             const d1User = await fetchD1Profile();
-            console.log('[Auth Sync] D1 Profile received:', d1User);
+            // console.log('[Auth Sync] D1 Profile received:', d1User);
 
             if (d1User) {
                 const updatedUser: User = {

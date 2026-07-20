@@ -77,8 +77,8 @@ export const safeFetch = async (url: string, options: RequestInit = {}) => {
 // TEMPLATES API
 // ============================================
 export const templates = {
-    async list(type: 'invitation' | 'display' = 'invitation') {
-        const res = await safeFetch(`${API_BASE}/api/templates?type=${type}`);
+    async list(type: 'invitation' | 'display' = 'invitation', includeDrafts = false) {
+        const res = await safeFetch(`${API_BASE}/api/templates?type=${type}${includeDrafts ? '&include_drafts=true' : ''}`);
         if (!res.ok) throw new Error('Failed to fetch templates');
         const data = await res.json();
         return sanitizeValue(data);

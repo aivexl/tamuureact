@@ -112,11 +112,12 @@ export const VendorAds: React.FC = () => {
                     </div>
 
                     <button
-                        onClick={() => setIsWizardOpen(true)}
-                        className="bg-slate-900 text-white px-6 py-3 rounded-xl text-sm font-bold shadow-lg shadow-slate-900/10 flex items-center gap-2 transition-all active:scale-95 hover:bg-black"
+                        onClick={() => {/* setIsWizardOpen(true) - DISABLED */}}
+                        disabled={true}
+                        className="bg-slate-900/50 text-white/50 px-6 py-3 rounded-xl text-sm font-bold shadow-none flex items-center gap-2 transition-all cursor-default"
                     >
                         <Plus className="w-4 h-4" />
-                        Buat Iklan Baru
+                        Coming Soon
                     </button>
                 </header>
 
@@ -130,10 +131,11 @@ export const VendorAds: React.FC = () => {
                                 <Wallet className="w-5 h-5 text-[#FFBF00]" />
                             </div>
                             <button 
-                                onClick={() => setTopupModal({ id: 'global', title: 'Saldo Iklan' })}
-                                className="px-4 py-2 bg-[#FFBF00] text-[#0A1128] text-[10px] font-black uppercase tracking-widest rounded-lg hover:bg-[#FFD700] transition-all active:scale-95 shadow-lg shadow-[#FFBF00]/20"
+                                onClick={() => {/* setTopupModal({ id: 'global', title: 'Saldo Iklan' }) - DISABLED */}}
+                                disabled={true}
+                                className="px-4 py-2 bg-[#FFBF00]/50 text-[#0A1128]/50 text-[10px] font-black uppercase tracking-widest rounded-lg cursor-default shadow-none"
                             >
-                                Top Up
+                                Coming Soon
                             </button>
                         </div>
 

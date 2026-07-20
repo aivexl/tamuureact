@@ -70,7 +70,7 @@ const TierCard: React.FC<TierCardProps> = ({
         )}
 
         {/* Step 2: Visual Urgency Bar (Apple-style) */}
-        {slotsLeft !== undefined && (
+        {/* DISABLED TEMPORARILY: {slotsLeft !== undefined && (
             <div className="mb-6 mt-4">
                 <div className="flex justify-between items-center mb-2 px-1">
                     <span className="text-[7px] font-black text-[#EF4444] uppercase tracking-[0.2em] flex items-center gap-1.5 animate-pulse">
@@ -80,28 +80,24 @@ const TierCard: React.FC<TierCardProps> = ({
                     <span className="text-[7px] font-black text-slate-400 uppercase tracking-[0.1em]">Tersisa {slotsLeft} Slot Promo</span>
                 </div>
                 <div className="h-1.5 w-full bg-emerald-500 rounded-full overflow-hidden flex shadow-[inset_0_1px_3px_rgba(0,0,0,0.2)] border border-slate-100/30">
-                    {/* Red Area (The Pressure Container) */}
                     <motion.div
                         initial={{ width: "0%" }}
                         animate={{ width: `${98 - ((slotsLeft - (slotsLeft > 10 ? 12 : slotsLeft > 5 ? 8 : slotsLeft > 2 ? 5 : 2)) / 6) * 5}%` }}
                         transition={{ duration: 1.5, ease: "easeOut" }}
                         className="h-full bg-[#EF4444] relative overflow-hidden"
                     >
-                        {/* Layer 1: Left to Right Pressure Wave (The "Push") */}
                         <motion.div 
                             animate={{ x: ["-100%", "100%"] }}
                             transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.5 }}
                             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent w-full skew-x-[-20deg] z-10"
                         />
 
-                        {/* Layer 2: Right to Left Flash (The "Reflection") */}
                         <motion.div 
                             animate={{ x: ["100%", "-100%"] }}
                             transition={{ duration: 3, repeat: Infinity, ease: "linear", delay: 1 }}
                             className="absolute inset-0 bg-gradient-to-l from-transparent via-white/20 to-transparent w-full z-20"
                         />
                         
-                        {/* Layer 3: Pulsing Base Glow */}
                         <motion.div 
                             animate={{ opacity: [0.85, 1, 0.85] }}
                             transition={{ duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
@@ -110,7 +106,7 @@ const TierCard: React.FC<TierCardProps> = ({
                     </motion.div>
                 </div>
             </div>
-        )}
+        )} */}
 
         <div className="space-y-4 mb-8 mt-6">
             {features.map((feature, i) => (
@@ -124,17 +120,15 @@ const TierCard: React.FC<TierCardProps> = ({
         </div>
 
         <button
-            onClick={onSelect}
-            disabled={isCurrent || isLoading}
+            onClick={() => {/* onSelect() - DISABLED */}}
+            disabled={true}
             className={`w-full py-4 rounded-2xl font-black text-sm transition-all flex items-center justify-center gap-2 ${isCurrent
                 ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
-                : isPopular
-                    ? 'bg-[#FFBF00] text-[#0A1128] hover:shadow-[0_10px_20px_rgba(255,191,0,0.3)]'
-                    : 'bg-[#0A1128] text-white hover:bg-[#152042]'
+                : 'bg-slate-100 text-slate-400 cursor-default'
                 } ${isLoading ? 'opacity-70 cursor-wait' : ''}`}
         >
-            {isLoading ? 'Processing...' : buttonText}
-            {!isCurrent && !isLoading && <ArrowRight className="w-4 h-4" />}
+            {isLoading ? 'Processing...' : isCurrent ? 'Active' : 'Coming Soon'}
+            {!isCurrent && !isLoading && false && <ArrowRight className="w-4 h-4" />}
         </button>
     </motion.div>
 );

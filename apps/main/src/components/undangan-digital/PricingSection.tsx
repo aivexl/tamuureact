@@ -330,9 +330,9 @@ const PricingSection: React.FC = () => {
                             </div>
 
                             {/* Apple-style Urgency Bar */}
-                            {urgency && (
+                            {/* DISABLED TEMPORARILY: {urgency && (
                                 <UrgencyBar count={urgency.left} max={urgency.total} />
-                            )}
+                            )} */}
 
                             <ul className="space-y-4 mb-10 mt-8">
                                 {plan.features.map((feature, i) => (
@@ -346,11 +346,11 @@ const PricingSection: React.FC = () => {
                             </ul>
 
                             <button
-                                onClick={() => handleAction(plan.tier)}
-                                disabled={!!processingTier || isCurrent}
+                                onClick={() => {/* handleAction(plan.tier) - DISABLED */}}
+                                disabled={true}
                                 className={`w-full py-4 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2 ${isCurrent
                                     ? 'bg-[#FFBF00] text-[#0A1128] cursor-default'
-                                    : 'bg-[#0A1128] text-white hover:bg-slate-800 shadow-lg shadow-indigo-950/20 hover:scale-[1.02]'
+                                    : 'bg-[#0A1128]/50 text-white/50 cursor-default shadow-none'
                                     } ${isProcessing ? 'opacity-70 cursor-wait' : ''}`}
                             >
                                 {isProcessing ? (
@@ -361,7 +361,7 @@ const PricingSection: React.FC = () => {
                                 ) : isCurrent ? (
                                     'Plan Aktif'
                                 ) : (
-                                    'Pilih Paket'
+                                    'Coming Soon'
                                 )}
                             </button>
                         </m.div>

@@ -881,17 +881,16 @@ export const ProductDetailClient: React.FC = () => {
                                 layout
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8 flex flex-col h-full"
+                                className="p-10 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm space-y-8 flex flex-col"
                             >
                                 <div className="flex items-center gap-3">
                                     <div className="h-5 w-1.5 bg-[#FFBF00] rounded-full" />
                                     <h2 className="text-xl font-black uppercase tracking-tighter">Deskripsi Produk</h2>
                                 </div>
                                 
-                                <div className="relative flex-1 flex flex-col">
-                                    <div className="flex-1" />
+                                <div className="relative">
                                     <m.div 
-                                        animate={{ height: isDescriptionExpanded ? 'auto' : '450px' }}
+                                        animate={{ height: isDescriptionExpanded ? 'auto' : (product.deskripsi && product.deskripsi.length > 800 ? '450px' : 'auto') }}
                                         transition={{ duration: 0.5, ease: [0.04, 0.62, 0.23, 0.98] }}
                                         className="overflow-hidden relative"
                                     >
@@ -914,7 +913,7 @@ export const ProductDetailClient: React.FC = () => {
                                     )}
                                 </div>
                                 
-                                <div className="pt-8 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                <div className="pt-8 mt-auto border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
                                     <div
                                         className="group flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 rounded-xl border border-slate-100 transition-all w-full sm:w-auto justify-center"
                                     >
@@ -938,7 +937,7 @@ export const ProductDetailClient: React.FC = () => {
                         </div>
 
                         {/* Alamat Card */}
-                        <div className="lg:col-span-6 flex flex-col h-full">
+                        <div className="lg:col-span-6 flex flex-col">
                             <m.div 
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
@@ -956,11 +955,10 @@ export const ProductDetailClient: React.FC = () => {
                                     )}
                                 </div>
                                 
-                                <div className="flex-1 flex flex-col">
-                                    <div className="flex-1" />
+                                <div className="flex-1">
                                     {product.alamat_lengkap ? (
-                                        <div className="space-y-4">
-                                            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                                        <div className="space-y-4 h-full flex flex-col">
+                                            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex-1">
                                                 <p className="text-slate-600 text-[11px] font-normal leading-relaxed uppercase tracking-tight">
                                                     {product.alamat_lengkap}
                                                 </p>
