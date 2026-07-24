@@ -3,7 +3,7 @@
 import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
-import { Container } from '@/components/layout/Container';
+import { Container } from '@/components/ui/Container';
 import { Breadcrumb } from '../Breadcrumb';
 import { ProductCard } from '@/components/Shop/ProductCard';
 import { API_BASE } from '@/lib/api';

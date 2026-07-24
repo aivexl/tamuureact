@@ -29,10 +29,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   try {
     // 2. Fetch Dynamic Data (Matrix SEO)
-    const [vendorsRes, articlesRes, citiesRes] = await Promise.allSettled([
+    const [vendorsRes, articlesRes] = await Promise.allSettled([
       fetch(`${API_URL}/admin/shop/vendors`, { next: { revalidate: 3600 } }), // Use admin list for thoroughness
-      fetch(`${API_URL}/blog`, { next: { revalidate: 3600 } }),
-      fetch(`${API_URL}/cities/active`, { next: { revalidate: 3600 } })
+      fetch(`${API_URL}/blog`, { next: { revalidate: 3600 } })
     ]);
 
     let dynamicRoutes: MetadataRoute.Sitemap = [];
@@ -66,63 +65,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     }
 
-    // 5. Matrix SEO Strategy (Category x City)
+    // [MATRIX SEO COMMENTED OUT FOR DIAGNOSTICS]
+    /*
     if (citiesRes.status === 'fulfilled' && citiesRes.value.ok) {
       const cities = await citiesRes.value.json();
       if (Array.isArray(cities)) {
-        // A. Product City Routes (/undangan-digital/[city])
-        const cityProductRoutes = cities.map((city: any) => ({
-          url: `${BASE_URL}/undangan-digital/${city.city_name.toLowerCase().replace(/\s+/g, '-')}`,
-          lastModified: new Date(),
-          changeFrequency: 'weekly' as const,
-          priority: 0.8,
-        }));
-        dynamicRoutes = [...dynamicRoutes, ...cityProductRoutes];
-
-        // B. Matrix Categories (/katalog/[category]/[city])
-        // [ENTERPRISE] Strategi Dominasi Total Event & Wedding Nasional
-        const CATEGORIES = [
-            { name: 'Wedding Organizer', slug: 'wedding-organizer' },
-            { name: 'MUA', slug: 'mua' },
-            { name: 'Fotografer', slug: 'fotografer' },
-            { name: 'Catering', slug: 'catering' },
-            { name: 'Gedung Pernikahan', slug: 'gedung' },
-            { name: 'Venue Acara', slug: 'venue' },
-            { name: 'Dekorasi Pelaminan', slug: 'dekorasi' },
-            { name: 'Seserahan', slug: 'seserahan' },
-            { name: 'Maskawin', slug: 'maskawin' },
-            { name: 'Bucket Bunga', slug: 'bucket-bunga' },
-            { name: 'Stall & Pondokan', slug: 'stall' },
-            { name: 'Sewa Baju Pengantin', slug: 'sewa-baju-pengantin' },
-            { name: 'Baju Pengantin Jawa', slug: 'sewa-baju-pengantin-jawa' },
-            { name: 'Baju Pengantin Sunda', slug: 'sewa-baju-pengantin-sunda' },
-            { name: 'Baju Pengantin Bali', slug: 'sewa-baju-pengantin-bali' },
-            { name: 'Sewa Mobil Pengantin', slug: 'sewa-mobil-pengantin' },
-            { name: 'Sewa Tenda Pengantin', slug: 'sewa-tenda-pengantin' },
-            { name: 'Sewa Panggung', slug: 'sewa-panggung' },
-            { name: 'Sound Sistem', slug: 'sound-sistem' },
-            { name: 'MC Pernikahan', slug: 'mc' },
-            { name: 'Wedding Coordinator', slug: 'wcc' },
-            { name: 'Paket Lamaran', slug: 'paket-lamaran' },
-            { name: 'Event Organizer', slug: 'event-organizer' },
-            { name: 'Vendor Konser', slug: 'vendor-konser' }
-        ];
-
-        const matrixRoutes: any[] = [];
-        CATEGORIES.forEach(cat => {
-            cities.forEach((city: any) => {
-                matrixRoutes.push({
-                    url: `${BASE_URL}/katalog/${cat.slug}/${city.city_name.toLowerCase().replace(/\s+/g, '-')}`,
-                    lastModified: new Date(),
-                    changeFrequency: 'monthly' as const,
-                    priority: 0.5,
-                });
-            });
-        });
-        
-        dynamicRoutes = [...dynamicRoutes, ...matrixRoutes];
+        // ... (routes)
       }
     }
+    */
 
     // 6. Combine & Return
     return [...staticRoutes, ...dynamicRoutes];

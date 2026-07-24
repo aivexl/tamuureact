@@ -27,7 +27,8 @@
     "react-hot-toast": "^2.6.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
-    "zustand": "^5.0.12"
+    "zustand": "^5.0.12",
+    "swr": "^2.3.2"
   },
   "devDependencies": {
     "@opennextjs/cloudflare": "^1.18.0",
