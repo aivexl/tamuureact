@@ -36,6 +36,7 @@
     "turbo": "^2.0.0"
   },
   "dependencies": {
+    "@opennextjs/cloudflare": "^1.20.2",
     "react-easy-crop": "^5.5.6"
   }
 }

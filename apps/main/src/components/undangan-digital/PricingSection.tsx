@@ -201,7 +201,7 @@ const PricingSection: React.FC = () => {
             };
             const amount = pricing[tier] || 49000;
 
-            const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.tamuu.id';
+            const API_BASE = 'https://api.tamuu.id';
             const response = await fetch(`${API_BASE}/api/billing/midtrans/token`, {
                 method: 'POST',
                 headers: {

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.tamuu.id';
+import { API_BASE } from '@/lib/api';
 const BASE_URL = 'https://tamuu.id';
 
 export async function GET() {

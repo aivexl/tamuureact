@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { m, AnimatePresence } from 'framer-motion';
+import { motion as m, AnimatePresence } from 'framer-motion';
 import { X, Copy, Check, Facebook, Instagram, MessageCircle, Share2, Globe, Send } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 

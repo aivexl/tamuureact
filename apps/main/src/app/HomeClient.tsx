@@ -18,10 +18,10 @@ import { ProductCard } from '@/components/Shop/ProductCard';
 import { ProductGrid } from '@/components/Shop/ProductGrid';
 import { SpecialAdsScroller } from '@/components/Shop/SpecialAdsScroller';
 import { SEOListingFooter } from '@/components/Shop/SEOListingFooter';
-import { Breadcrumbs } from '@/components/Shop/Breadcrumbs';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { ShopIcon } from '@tamuu/ui';
 import Link from 'next/link';
+import { API_BASE } from '@/lib/api';
 
 export default function HomeContent() {
     const searchParams = useSearchParams();
@@ -49,13 +49,13 @@ export default function HomeContent() {
             try {
                 // Fetch comprehensive home data
                 const [slidesRes, productsRes, featuredRes, blogRes, catRes, adsBannerRes, specialProductsRes] = await Promise.all([
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/carousel`).then(r => r.json()),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/products/discovery?limit=50`).then(r => r.json()),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/products/featured`).then(r => r.json()),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/blog?limit=6`).then(r => r.json()),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/categories`).then(r => r.json()),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/ads?position=SHOP_SPECIAL_FOR_YOU`).then(r => r.json()),
-                    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/shop/products/special`).then(r => r.json())
+                    fetch(`${API_BASE}/api/shop/carousel`).then(r => r.json()),
+                    fetch(`${API_BASE}/api/shop/products/discovery?limit=50`).then(r => r.json()),
+                    fetch(`${API_BASE}/api/shop/products/featured`).then(r => r.json()),
+                    fetch(`${API_BASE}/api/blog?limit=6`).then(r => r.json()),
+                    fetch(`${API_BASE}/api/shop/categories`).then(r => r.json()),
+                    fetch(`${API_BASE}/api/shop/ads?position=SHOP_SPECIAL_FOR_YOU`).then(r => r.json()),
+                    fetch(`${API_BASE}/api/shop/products/special`).then(r => r.json())
                 ]);
 
                 setData({
@@ -110,8 +110,10 @@ export default function HomeContent() {
 
     return (
         <main className="min-h-screen bg-white">
+            {/* [ENTERPRISE SEO FIX] Breadcrumb dihapus dari Homepage.
+                Breadcrumb tidak boleh ada di root page ('/') karena merupakan level 0 dari hierarki.
+                Ini adalah anti-pattern SEO dan membuang screen real-estate. */}
             <Container className="pt-24 pb-32">
-                <Breadcrumbs />
 
                 {/* Hero Carousel */}
                 <section className="mb-12">
@@ -222,6 +224,7 @@ export default function HomeContent() {
                 <section className="mb-32">
                     <ProductGrid 
                         products={filteredProducts}
+                        fallbackProducts={data.products}
                         title={activeTab === 'products' ? 'Semua Produk' : 'Semua Vendor'}
                     />
                 </section>

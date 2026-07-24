@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { m } from 'framer-motion';
+import { motion as m } from 'framer-motion';
 import { ChevronRight, ChevronLeft } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { shop } from '@/lib/api';

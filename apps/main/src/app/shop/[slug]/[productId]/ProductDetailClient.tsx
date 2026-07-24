@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { m, AnimatePresence } from 'framer-motion';
+import { motion as m, AnimatePresence } from 'framer-motion';
 import {
     ExternalLink,
     ArrowUpRight,
@@ -61,6 +61,7 @@ import { StarRating } from '@/components/Shop/StarRating';
 import { FeaturedAdsScroller } from '@/components/Shop/FeaturedAdsScroller';
 import { ProductCard } from '@/components/Shop/ProductCard';
 import { XLogoIcon, TikTokIcon } from '@/components/ui/Icons';
+import { Breadcrumbs } from '@/components/Shop/Breadcrumbs';
 
 export const ProductDetailClient: React.FC = () => {
     const params = useParams();
@@ -505,44 +506,49 @@ export const ProductDetailClient: React.FC = () => {
         setIsShareModalOpen(true);
     };
 
+    // FIX: Pastikan loading state benar-benar ditunggu dan tidak return early jika data belum siap
     if (isLoadingProduct) return <div className="min-h-screen bg-white flex items-center justify-center"><PremiumLoader color="#0A1128" /></div>;
-    if (!product) return <div className="min-h-screen bg-white flex flex-col items-center justify-center text-[#0A1128]">
+    
+    // Gunakan pengecekan yang lebih aman. Jangan langsung return jika product undefined sementara isLoadingProduct true/false
+    if (!product && !isLoadingProduct) return <div className="min-h-screen bg-white flex flex-col items-center justify-center text-[#0A1128]">
         <h2 className="text-2xl font-black mb-4">Produk Tidak Ditemukan</h2>
         <button onClick={() => router.push(`/shop/${slug === 'admin' ? 'umum' : (slug || 'umum')}`)} className="text-[#FFBF00] font-bold">Kembali ke Toko</button>
     </div>;
 
+    // Jika product masih belum ada, tampilkan loader lagi daripada langsung error
+    if (!product) return <div className="min-h-screen bg-white flex items-center justify-center"><PremiumLoader color="#0A1128" /></div>;
+
     const images = product.images || [];
+    console.log("DEBUG: Rendering Product:", product);
+    console.log("DEBUG: Images:", images);
 
     return (
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
-            <main className="pt-10 pb-40">
+            <main className="pt-32 pb-40">
+                <div className="max-w-7xl mx-auto px-6">
+                    <Breadcrumbs />
+                </div>
                 <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-16">
                     {/* LEFT: Image Gallery */}
                     <div className="space-y-6">
-                        <div className="relative aspect-square max-h-[550px] w-full rounded-[2.5rem] overflow-hidden bg-slate-50 border border-slate-100 group shadow-sm">
-                            <AnimatePresence mode="wait">
-                                <m.img
-                                    key={currentImageIndex}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    src={images[currentImageIndex]?.image_url || 'https://images.unsplash.com/photo-1540553016722-983e48a2cd10?auto=format&fit=crop&q=80'}
-                                    alt={product.nama_produk}
-                                    className="w-full h-full object-cover"
-                                />
-                            </AnimatePresence>
+                        <div className="relative aspect-square max-h-[550px] w-full rounded-[2.5rem] overflow-hidden bg-slate-50 border border-slate-100 shadow-sm">
+                            <img
+                                src={images[currentImageIndex]?.image_url || 'https://images.unsplash.com/photo-1540553016722-983e48a2cd10?auto=format&fit=crop&q=80'}
+                                alt={product.nama_produk}
+                                className="w-full h-full object-cover block"
+                            />
                             
                             {images.length > 1 && (
                                 <>
                                     <button
                                         onClick={() => setCurrentImageIndex(prev => (prev > 0 ? prev - 1 : images.length - 1))}
-                                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-sm"
+                                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center transition-all shadow-sm z-10"
                                     >
                                         <ChevronLeft className="w-5 h-5" />
                                     </button>
                                     <button
                                         onClick={() => setCurrentImageIndex(prev => (prev < images.length - 1 ? prev + 1 : 0))}
-                                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-sm"
+                                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur-md flex items-center justify-center transition-all shadow-sm z-10"
                                     >
                                         <ChevronRight className="w-5 h-5" />
                                     </button>

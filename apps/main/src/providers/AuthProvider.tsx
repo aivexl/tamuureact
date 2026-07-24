@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useRef, useMemo 
 import { createClient } from '@/lib/supabase/client';
 import { useRouter, usePathname } from 'next/navigation';
 import { useStore } from '@tamuu/shared';
+import { API_BASE } from '@/lib/api';
 
 interface AuthContextType {
     user: any;
@@ -55,7 +56,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         try {
             // 2. Fetch Full Profile from D1
-            const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.tamuu.id';
+            
             const res = await fetch(`${API_BASE}/api/auth/me?email=${encodeURIComponent(supabaseUser.email)}&uid=${supabaseUser.id}&name=${encodeURIComponent(supabaseUser.user_metadata?.full_name || supabaseUser.user_metadata?.name || '')}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`

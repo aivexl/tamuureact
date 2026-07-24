@@ -537,12 +537,13 @@ export const ProductDetailPage: React.FC = () => {
                             <AnimatePresence mode="wait">
                                 <m.img
                                     key={currentImageIndex}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
                                     src={images[currentImageIndex]?.image_url || 'https://images.unsplash.com/photo-1540553016722-983e48a2cd10?auto=format&fit=crop&q=80'}
                                     alt={product.nama_produk}
                                     className="w-full h-full object-cover"
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    exit={{ opacity: 0 }}
+                                    transition={{ duration: 0.3 }}
                                 />
                             </AnimatePresence>
                             
@@ -904,17 +905,23 @@ export const ProductDetailPage: React.FC = () => {
                                 </div>
                                 
                                 <div className="relative">
-                                    <m.div 
-                                        animate={{ height: isDescriptionExpanded ? 'auto' : (product.deskripsi && product.deskripsi.length > 800 ? '450px' : 'auto') }}
-                                        transition={{ duration: 0.5, ease: [0.04, 0.62, 0.23, 0.98] }}
-                                        className="overflow-hidden relative"
-                                    >
+                                    <div className={`
+                                        overflow-hidden 
+                                        relative 
+                                        transition-all 
+                                        duration-500 
+                                        ease-in-out
+                                        ${isDescriptionExpanded ? 'max-h-[10000px]' : 'max-h-[450px]'}
+                                    `}>
                                         <div className="text-slate-600 text-[13px] leading-relaxed font-medium whitespace-pre-wrap">
-                                            {product.deskripsi || "Vendor belum memberikan deskripsi lengkap untuk produk ini."}
+                                            {String(product.deskripsi || "Vendor belum memberikan deskripsi lengkap untuk produk ini.")}
                                         </div>
-                                    </m.div>
+                                        {!isDescriptionExpanded && typeof product.deskripsi === 'string' && product.deskripsi.length > 800 && (
+                                            <div className="absolute bottom-0 left-0 w-full h-24 bg-gradient-to-t from-white to-transparent" />
+                                        )}
+                                    </div>
 
-                                    {product.deskripsi && product.deskripsi.length > 800 && (
+                                    {typeof product.deskripsi === 'string' && product.deskripsi.length > 800 && (
                                         <button 
                                             onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
                                             className="mt-6 flex items-center gap-2 text-[#FFBF00] font-black uppercase tracking-widest text-[10px] hover:text-[#0A1128] transition-colors group"

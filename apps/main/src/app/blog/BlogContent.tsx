@@ -4,7 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { BlogCard, BlogPost } from '@/components/blog/BlogCard';
-import { Breadcrumbs } from '@/components/Shop/Breadcrumbs';
+import Breadcrumb from '@/app/Breadcrumb';
 import { PremiumLoader } from '@/components/ui/PremiumLoader';
 import { MultiCarousel } from '@/components/ui/MultiCarousel';
 import { getBlogPosts } from '@/lib/api';
@@ -64,9 +64,8 @@ export default function BlogContent({ initialPosts, categories, carouselSlides }
     return (
         <main className="max-w-7xl mx-auto px-4 sm:px-6 pb-32 pt-32 sm:pt-48">
             
-            {/* Breadcrumbs Navigation */}
             <div className="mb-8">
-                <Breadcrumbs />
+                <Breadcrumb items={[{ label: 'Blog', href: '/blog' }]} />
             </div>
 
             {/* Enterprise MultiCarousel (Pipih & Sinematik) */}

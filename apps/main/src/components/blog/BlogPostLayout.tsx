@@ -8,6 +8,8 @@ import { Sparkles } from 'lucide-react';
 import { BlogCard, BlogPost } from './BlogCard';
 import { AnimatedCopyIcon } from '../ui/AnimatedCopyIcon';
 
+import Breadcrumb from '@/app/Breadcrumb';
+
 interface BlogPostLayoutProps {
     post: BlogPost;
     relatedPosts: BlogPost[];
@@ -66,10 +68,16 @@ export const BlogPostLayout: React.FC<BlogPostLayoutProps> = ({ post, relatedPos
     const scaleX = useSpring(scrollYProgress, { stiffness: 100, damping: 30, restDelta: 0.001 });
     const readingTime = Math.max(1, Math.ceil((post.content?.length || 0) / 1200));
 
+    const breadcrumbItems = [
+        { label: 'Blog', href: '/blog' },
+        { label: post.title, href: `/blog/${post.slug}` }
+    ];
+
     return (
         <div className="min-h-screen bg-white font-inter text-[#0A1128]">
             <motion.div className="fixed top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-teal-500 to-teal-400 origin-left z-50" style={{ scaleX }} />
             <main className="max-w-4xl mx-auto px-6 pt-32 sm:pt-48 pb-16 md:pb-24">
+                <Breadcrumb items={breadcrumbItems} />
                 <header className="mb-12 sm:mb-16">
                     <div className="mb-8 sm:mb-10 rounded-2xl sm:rounded-3xl overflow-hidden aspect-[16/9] sm:aspect-[2/1] bg-slate-50 relative group shadow-2xl">
                         <img 

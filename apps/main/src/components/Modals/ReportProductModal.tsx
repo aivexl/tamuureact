@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { m, AnimatePresence } from 'framer-motion';
+import { motion as m, AnimatePresence } from 'framer-motion';
 import { X, ShieldAlert, CheckCircle2 } from 'lucide-react';
 import { useSubmitReport } from '../../hooks/queries/useShop';
 import { useStore } from '@tamuu/shared';

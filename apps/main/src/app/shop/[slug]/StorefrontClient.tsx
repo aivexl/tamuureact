@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { m, AnimatePresence } from 'framer-motion';
+import { motion as m, AnimatePresence } from 'framer-motion';
 import {
     MapPin,
     ShoppingBag,
@@ -19,6 +19,7 @@ import { ProductCard } from '@/components/Shop/ProductCard';
 import { ShareModal } from '@/components/Modals/ShareModal';
 import { VendorContactCard } from '@/components/Shop/VendorContactCard';
 import { AnimatedCopyIcon } from '@/components/ui/AnimatedCopyIcon';
+import { Breadcrumbs } from '@/components/Shop/Breadcrumbs';
 
 export const StorefrontClient: React.FC = () => {
     const params = useParams();
@@ -71,6 +72,10 @@ export const StorefrontClient: React.FC = () => {
     return (
         <div className="min-h-screen bg-white text-[#0A1128] font-sans selection:bg-[#FFBF00] selection:text-[#0A1128]">
             <main className="pt-10 pb-40">
+                <div className="max-w-7xl mx-auto px-6">
+                    <Breadcrumbs />
+                </div>
+
                 {/* COMPACT PREMIUM BANNER */}
                 <div className="max-w-7xl mx-auto px-0 sm:px-6 pt-6">
                     <div className="relative h-48 md:h-72 w-full overflow-hidden sm:rounded-[2.5rem] bg-slate-100 border border-slate-100/50 group shadow-sm">

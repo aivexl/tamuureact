@@ -1,1 +1,0 @@
-ALTER TABLE invitations ADD COLUMN og_settings TEXT DEFAULT '{}';

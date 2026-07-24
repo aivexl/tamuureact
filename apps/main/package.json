@@ -3,12 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "build:worker": "npx @opennextjs/cloudflare@latest build",
-    "start": "next start",
-    "lint": "next lint"
+      "dev": "next dev",
+      "build": "NEXT_PUBLIC_SUPABASE_URL=https://mqbgpulironhtvzfpzfp.supabase.co NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_t_HpvfrsoiBwzEyy-LN3Ug_VWfPaqIj next build",
+      "build:worker": "npx @opennextjs/cloudflare@latest build",
+      "start": "next start",
+      "lint": "next lint"
   },
+
   "dependencies": {
     "@radix-ui/react-slot": "^1.2.4",
     "@supabase/ssr": "^0.10.0",
