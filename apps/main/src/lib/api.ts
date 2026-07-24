@@ -4,7 +4,7 @@
 import { patchLegacyUrl, sanitizeValue } from './utils';
 import { supabase } from './supabase';
 
-export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'https://api.tamuu.id';
+export const API_BASE = 'https://api.tamuu.id';
 
 /**
  * CTO SECURITY: Get Token from Cookie (SSR Bridge)
@@ -585,6 +585,43 @@ export const admin = {
     }
 };
 
+// ============================================
+// CITIES API (pSEO)
+// ============================================
+export const cities = {
+    async list() {
+        try {
+            const res = await fetch(`${API_BASE}/api/cities/active`, { next: { revalidate: 3600 } });
+            if (!res.ok) return [];
+            return await res.json();
+        } catch (e) {
+            console.error('[API cities.list] Error:', e);
+            return [];
+        }
+    },
+    async get(slug: string) {
+        try {
+            const res = await fetch(`${API_BASE}/api/cities/${slug}`, { next: { revalidate: 3600 } });
+            if (!res.ok) return null;
+            return await res.json();
+        } catch (e) {
+            console.error('[API cities.get] Error:', e);
+            return null;
+        }
+    },
+    async getNexusMetadata(category: string, city: string, intent: string = 'BEST') {
+        try {
+            const params = new URLSearchParams({ category, city, intent });
+            const res = await fetch(`${API_BASE}/api/seo/nexus?${params.toString()}`, { next: { revalidate: 3600 } });
+            if (!res.ok) return null;
+            return await res.json();
+        } catch (e) {
+            console.error('[API cities.getNexusMetadata] Error:', e);
+            return null;
+        }
+    }
+};
+
 // Default export for easy migration
 export default {
     templates,
@@ -593,6 +630,7 @@ export default {
     users,
     admin,
     shop,
+    cities,
     getShopData,
     getBlogPosts,
     getBlogPost,

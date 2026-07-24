@@ -1309,6 +1309,107 @@ export default {
             }
 
             // ============================================
+            // PROGRAMMATIC SEO (pSEO) & METADATA
+            // ============================================
+
+            // Fetch Active Cities for Sitemap & pSEO
+            if (path === '/api/cities/active' && method === 'GET') {
+                try {
+                    const cities = await env.DB.prepare(
+                        'SELECT city_name FROM seo_city_metadata WHERE is_active = 1 ORDER BY city_name ASC'
+                    ).all();
+                    return json(cities.results, corsHeaders);
+                } catch (error) {
+                    return json({ error: error.message }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // Fetch City Metadata by Slug (pSEO Engine)
+            if (path.startsWith('/api/cities/') && method === 'GET') {
+                const slug = path.split('/').pop();
+                // Convert slug back to potential city name (simple approach: title case and replace - with space)
+                // Better: query by a slugified version of city_name in DB if we had a slug column.
+                // For now, we'll try a fuzzy match or exact match by reconstructing the name.
+                const cityName = slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+
+                try {
+                    // Try exact match first
+                    let city = await env.DB.prepare(
+                        'SELECT * FROM seo_city_metadata WHERE city_name = ? AND is_active = 1'
+                    ).bind(cityName).first();
+
+                    // If not found, try fuzzy match (slugified city_name)
+                    if (!city) {
+                        const allCities = await env.DB.prepare('SELECT * FROM seo_city_metadata WHERE is_active = 1').all();
+                        city = allCities.results.find(c => 
+                            c.city_name.toLowerCase().replace(/\s+/g, '-') === slug
+                        );
+                    }
+
+                    if (!city) return notFound(corsHeaders);
+                    return json(city, corsHeaders);
+                } catch (error) {
+                    return json({ error: error.message }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // Fetch SEO Metadata (Nexus Engine)
+            if (path === '/api/seo/nexus' && method === 'GET') {
+                const category = getParam('category') || 'Vendor';
+                const citySlug = getParam('city');
+                const intent = getParam('intent') || 'BEST';
+                const month = new Date().toLocaleString('id-ID', { month: 'long' });
+                const year = new Date().getFullYear();
+
+                try {
+                    // 1. Resolve City
+                    const allCities = await env.DB.prepare('SELECT * FROM seo_city_metadata WHERE is_active = 1').all();
+                    const targetCity = allCities.results.find(c => 
+                        c.city_name.toLowerCase().replace(/\s+/g, '-') === citySlug
+                    ) || { city_name: citySlug ? citySlug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'Indonesia', province: '' };
+
+                    // 2. Fetch Templates for Intent
+                    const { results: templates } = await env.DB.prepare(
+                        'SELECT * FROM seo_templates WHERE intent_type = ?'
+                    ).bind(intent).all();
+
+                    let activeTemplates = templates;
+                    if (activeTemplates.length === 0) {
+                        const { results: fallback } = await env.DB.prepare(
+                            'SELECT * FROM seo_templates WHERE intent_type = "BEST"'
+                        ).all();
+                        activeTemplates = fallback;
+                    }
+
+                    // 3. Resolve Placeholders
+                    const resolve = (text) => {
+                        if (!text) return '';
+                        return text
+                            .replace(/{Category}/g, category)
+                            .replace(/{City}/g, targetCity.city_name)
+                            .replace(/{Month}/g, month)
+                            .replace(/{Year}/g, year)
+                            .replace(/{Count}/g, '12') // Curated count
+                            .replace(/{MinPrice}/g, 'Harga Terbaik'); 
+                    };
+
+                    const metadata = {
+                        title: resolve(activeTemplates.find(t => t.section === 'TITLE')?.content_template),
+                        meta_desc: resolve(activeTemplates.find(t => t.section === 'META_DESC')?.content_template),
+                        h1: resolve(activeTemplates.find(t => t.section === 'H1')?.content_template),
+                        intro_body: resolve(activeTemplates.find(t => t.section === 'INTRO_BODY')?.content_template),
+                        city: targetCity,
+                        category,
+                        intent
+                    };
+
+                    return json(metadata, corsHeaders);
+                } catch (error) {
+                    return json({ error: error.message }, { ...corsHeaders, status: 500 });
+                }
+            }
+
+            // ============================================
             // SHOP ECOSYSTEM (TAMUU NEXUS)
             // ============================================
 
@@ -1878,6 +1979,54 @@ export default {
                     } catch (error) {
                         return json({ error: 'Failed to submit review', details: error.message }, { ...corsHeaders, status: 500 });
                     }
+                }
+            }
+
+            // PUBLIC: UNIVERSAL SEARCH (v1.0)
+            if (path === '/api/search' && method === 'GET') {
+                const q = url.searchParams.get('q');
+                if (!q) {
+                    return json({ results: [] }, corsHeaders);
+                }
+
+                const searchPattern = `%${q}%`;
+                const limit = parseInt(url.searchParams.get('limit') || '50');
+
+                try {
+                    const { results } = await env.DB.prepare(`
+                        SELECT
+                            p.*,
+                            m.nama_toko,
+                            m.slug as vendor_slug,
+                            m.logo_url,
+                            con.kota,
+                            cat.nama_kategori
+                        FROM
+                            shop_products p
+                        JOIN
+                            shop_merchants m ON p.merchant_id = m.id
+                        LEFT JOIN
+                            shop_contacts con ON m.id = con.merchant_id
+                        LEFT JOIN
+                            shop_category cat ON m.category_id = cat.id
+                        WHERE
+                            p.status = 'PUBLISHED' AND (
+                                p.nama_produk LIKE ?1 OR
+                                p.deskripsi LIKE ?1 OR
+                                m.nama_toko LIKE ?1 OR
+                                con.kota LIKE ?1 OR
+                                cat.nama_kategori LIKE ?1
+                            )
+                        GROUP BY p.id
+                        ORDER BY p.is_featured DESC, p.created_at DESC
+                        LIMIT ?2
+                    `).bind(searchPattern, limit).all();
+
+                    return json({ results }, corsHeaders);
+
+                } catch (error) {
+                    console.error('[API Search] Error:', error);
+                    return json({ error: 'Search failed', details: error.message }, { ...corsHeaders, status: 500 });
                 }
             }
 
@@ -3314,6 +3463,8 @@ export default {
                 let positions = [position];
                 if (position === 'PRODUCT_LIST_TOP' || position === 'PRODUCT_LIST_BANNER') {
                     positions = ['PRODUCT_LIST_TOP', 'PRODUCT_LIST_BANNER'];
+                } else if (position === 'FEATURED_PRODUCT_DETAIL' || position === 'PRODUCT_DETAIL_SIDEBAR') {
+                    positions = ['FEATURED_PRODUCT_DETAIL', 'PRODUCT_DETAIL_SIDEBAR'];
                 } else if (position === 'SPECIAL_FOR_YOU_HOME' || position === 'SPECIAL_FOR_YOU' || position === 'SHOP_SPECIAL_FOR_YOU') {
                     positions = ['SPECIAL_FOR_YOU_HOME', 'SPECIAL_FOR_YOU', 'SHOP_SPECIAL_FOR_YOU'];
                 } else if (position === 'FEATURED_PRODUCT_HOME' || position === 'FEATURED_PRODUCT') {
@@ -3349,7 +3500,7 @@ export default {
                         finalAds = weightedRandom(ads, 4);
                     } else if (pos === 'SPECIAL_FOR_YOU_HOME' || pos === 'SPECIAL_FOR_YOU' || pos === 'SHOP_SPECIAL_FOR_YOU') {
                         finalAds = weightedRandom(ads, 10);
-                    } else if (pos === 'FEATURED_PRODUCT_DETAIL') {
+                    } else if (pos === 'FEATURED_PRODUCT_DETAIL' || pos === 'PRODUCT_DETAIL_SIDEBAR') {
                         finalAds = weightedRandom(ads, 8);
                     } else if (pos === 'PRODUCT_LIST_BANNER' || pos === 'PRODUCT_LIST_TOP') {
                         finalAds = weightedRandom(ads, 1); // Only show one winner for the top banner
@@ -3514,7 +3665,7 @@ export default {
                 try {
                     // ROBUST LOOKUP: Check both ID and Slug in one query
                     const product = await env.DB.prepare(`
-                        SELECT p.*, m.nama_toko, m.slug as vendor_slug, m.logo_url, m.kontak_utama as m_kontak_utama,
+                        SELECT p.*, p.deskripsi, p.alamat_lengkap, m.nama_toko, m.slug as vendor_slug, m.logo_url, m.kontak_utama as m_kontak_utama,
                         c.whatsapp as m_whatsapp, c.phone as m_phone, c.instagram as m_instagram,
                         c.facebook as m_facebook, c.x_url as m_x_url, c.website as m_website,
                         c.shopee_url as m_shopee_url, c.tokopedia_url as m_tokopedia_url, c.tiktokshop_url as m_tiktokshop_url,
@@ -3529,8 +3680,11 @@ export default {
                         WHERE p.id = ? OR p.slug = ?
                     `).bind(idOrSlug, idOrSlug).first();
 
+                    console.log('DEBUG: Fetched product:', JSON.stringify(product));
+
                     if (!product) return json({ error: 'Product not found' }, { ...corsHeaders, status: 404 });
 
+                    console.log('DEBUG: Fetched product:', JSON.stringify(product));
                     const images = await env.DB.prepare('SELECT * FROM shop_product_images WHERE product_id = ? ORDER BY order_index ASC').bind(product.id).all();
 
                     return json({
