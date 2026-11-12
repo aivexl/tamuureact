@@ -36,7 +36,7 @@ export default function AboutContent() {
                         Redefining Digital <br className="hidden md:block" /> Invitation <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-amber-200">Engineering</span>
                     </h1>
                     <p className="text-base sm:text-lg md:text-xl text-slate-400 font-medium leading-relaxed max-w-2xl mx-auto">
-                        Based in BSD, Tangerang, Tamuu is Indonesia's most advanced digital invitation platform,
+                        Operated by <span className="text-white font-semibold">PT. TAMUU TEKNOLOGI INDONESIA</span> and based in BSD, Tangerang, Tamuu is Indonesia's most advanced digital invitation platform,
                         where premium design meets world-class technology.
                     </p>
                 </div>

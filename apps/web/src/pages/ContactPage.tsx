@@ -81,8 +81,9 @@ export const ContactPage: React.FC = () => {
                                         <MapPin className="w-5 h-5 sm:w-6 sm:h-6" />
                                     </div>
                                     <div className="pt-1.5 sm:pt-2">
-                                        <h4 className="font-black text-slate-900 uppercase text-[9px] sm:text-xs tracking-widest mb-1">Headquarters</h4>
-                                        <p className="text-base sm:text-lg text-slate-600 font-bold leading-tight sm:leading-normal">BSD, Tangerang, Banten, Indonesia</p>
+                                        <h4 className="font-black text-slate-900 uppercase text-[9px] sm:text-xs tracking-widest mb-1">Company & Headquarters</h4>
+                                        <p className="text-base sm:text-lg text-slate-900 font-black leading-tight sm:leading-normal">PT. TAMUU TEKNOLOGI INDONESIA</p>
+                                        <p className="text-xs sm:text-sm text-slate-500 font-medium leading-tight sm:leading-normal mt-0.5">BSD, Tangerang, Banten, Indonesia</p>
                                     </div>
                                 </div>
                             </div>

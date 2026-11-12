@@ -100,7 +100,7 @@ export const Footer: React.FC = () => {
 
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
                     <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
-                        © 2026 Tamuu Indonesia. All rights reserved.
+                        © 2026 PT. TAMUU TEKNOLOGI INDONESIA. All rights reserved.
                     </p>
                     <div className="flex items-center gap-8">
                         <SmartLink href="/privacy" className="text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Privacy Policy</SmartLink>

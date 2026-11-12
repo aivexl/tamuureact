@@ -98,7 +98,7 @@ export const Footer = () => {
                 {/* Bottom Bar */}
                 <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6">
                     <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">
-                        © 2026 Tamuu Indonesia. All rights reserved.
+                        © 2026 PT. TAMUU TEKNOLOGI INDONESIA. All rights reserved.
                     </p>
                     <div className="flex items-center gap-8">
                         <SmartLink href="/privacy" prefetch={false} className="text-slate-500 hover:text-white transition-colors text-[10px] font-bold uppercase tracking-widest">Privacy Policy</SmartLink>
